@@ -1,0 +1,9 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: container-build/Dockerfile
+    ports:
+    - "8081:80"
+    volumes:
+    - .:/var/www
