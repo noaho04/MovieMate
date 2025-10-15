@@ -30,7 +30,7 @@ function call_api($chatlog) {
     }
 
     curl_close($ch);
-
+    
     return $result['candidates'][0]['content']['parts'][0]['text'];
 }
 ?>

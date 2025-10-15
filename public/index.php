@@ -8,6 +8,7 @@ if (!isset($_SESSION['messages'])) {
         "display_only" => true
     ]];
 }
+//TODO Loading stage? display user message and a text bubble with ... from AI
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
     // do sanitization later?
     $userMessage = trim(strip_tags($_POST['message']));
@@ -41,15 +42,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
         <link href="style.css" rel="stylesheet">
     </head>
     <body>
-        <div class="container">
-            <h1>MovieMate</h1>
-        </div>
-        <div>
-            <div>
+        <div class="chat-container">
+            <div class="chat-messages">
                 <!--TODO message separation by . to avoid overly long messages from AI-->
                 <?php 
                 foreach ($_SESSION['messages'] as $message) {
-                    echo '<div>'.$message["content"].'</div>';
+                    $class = $message['role'] === 'user' ? 'user' : 'model';
+                    echo '<div class="message ' . $class . '">' . htmlspecialchars($message["content"]) . '</div>';
                 }
                 ?>
             </div>
