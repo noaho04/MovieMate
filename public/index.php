@@ -1,16 +1,19 @@
 <?php
 require "../src/call.php";
+
+// Start a session for chat persistence
 session_start();
+
+// Initialize the messages with a welcome if no messages are found
 if (!isset($_SESSION['messages'])) {
     $_SESSION['messages'] = [[
         "role" => "model",
-        "content" => "Hei, jeg er MovieMate. Spør meg om hva som helst film-relatert!",
-        "display_only" => true
+        "content" => "Hei, jeg er MovieMate. Spør meg om hva som helst film-relatert!"
     ]];
 }
 //TODO Loading stage? display user message and a text bubble with ... from AI
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
-    // do sanitization later?
+    // Further sanitization later?
     $userMessage = trim(strip_tags($_POST['message']));
 
     $_SESSION['messages'][] = [
@@ -19,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
     ];
 
     $chatlog = [];
+    // Pass messages to chatlog excepting first welcome message
     foreach (array_slice($_SESSION['messages'], 1) as $message) {
         $chatlog[] = [
             "role" => $message["role"],
@@ -29,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
             ]
         ];
     }
+    // Add a new message and call API to get response
     $_SESSION['messages'][] = [
         "role" => "model",
         "content" => call_api($chatlog)
@@ -45,10 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
         <div class="chat-container">
             <div class="chat-messages">
                 <!--TODO message separation by . to avoid overly long messages from AI-->
-                <?php 
+                <?php
+                // Iterate over messages and create visual representation by sender
                 foreach ($_SESSION['messages'] as $message) {
-                    $class = $message['role'] === 'user' ? 'user' : 'model';
-                    echo '<div class="message ' . $class . '">' . htmlspecialchars($message["content"]) . '</div>';
+                    echo '<div class="message ' . $message['role'] . '">' . htmlspecialchars($message["content"]) . '</div>';
                 }
                 ?>
             </div>
