@@ -141,13 +141,6 @@ form button:active {
   background: var(--bubble-model);
 }
 
-.dark form {
-  border-top: 1px solid #cccccc50;
-}
-.dark .chat-messages::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
-}
-
 .chat-header {
   display: flex;
   align-items: center;
@@ -173,4 +166,14 @@ form button:active {
   margin: 0;
   color: var(--text);
   user-select: none;
+}
+
+.dark form {
+  border-top: 1px solid #cccccc50;
+}
+.dark .chat-header {
+  border-bottom: 1px solid #cccccc50;
+}
+.dark .chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
 }
