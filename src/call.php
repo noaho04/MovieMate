@@ -27,17 +27,15 @@ function call_api($chatlog) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     // Execute the request
     $response = curl_exec($ch);
-
     // Simple error handling for curl errors (expand upon, + api errors)
     if (curl_errno($ch)) {
-        echo "cURL error: " . curl_error($ch);
+        $result = "cURL error: " . curl_error($ch);
     } else {
         $result = json_decode($response, true);
+        // Get the resulting text from API-response (add checks for eventual error responses, and default error response from AI as message)
+        $result = $result['candidates'][0]['content']['parts'][0]['text'];
     }
-
     curl_close($ch);
-
-    // Return the resulting text from API-response (add checks for eventual error responses, and default error response from AI as message)
-    return $result['candidates'][0]['content']['parts'][0]['text'];
+    return $result;
 }
 ?>
