@@ -1,100 +1,149 @@
+:root {
+  --accent: #ef4444;
+  --bg: #ffffff;
+  --card: #ffffff;
+  --bubble-user: var(--accent);
+  --bubble-model: #e4e6eb;
+  --text: #1f2937;
+  --text-invert: #ffffff;
+  --radius: 12px;
+}
+
+/* Manual dark mode */
+.dark {
+  --bg: #0d0f12;
+  --card: #1a1d21;
+  --bubble-model: #2a2d32;
+  --text: #e5e7eb;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
 .chat-container {
-    width: 50%;
-    height: 100%;
-    margin: 40px auto;
-    display: flex;
-    flex-direction: column;
-    background-color: #f7f7f7;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    overflow: hidden;
+  max-width: 700px;
+  height: 90vh;
+  margin: 4vh auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: 0 0px 8px rgba(0, 0, 0, 0.20);
+  overflow: hidden;
 }
 
 .chat-messages {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    max-height: 70vh;
-    background-color: #fff;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  flex: 1;
+  padding: 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .message {
-    display: inline-block;
-    padding: 10px 14px;
-    border-radius: 16px;
-    line-height: 1.4;
-    word-wrap: break-word;
-    word-break: break-word;
-    width: fit-content;
-    max-width: 60%;
+  max-width: 75%;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  word-wrap: break-word;
+  line-height: 1.4;
 }
 
 .message.user {
-    background-color: #0078d7;
-    color: white;
-    align-self: flex-end;
-    border-bottom-right-radius: 2px;
+  align-self: flex-end;
+  background: var(--bubble-user);
+  color: var(--text-invert);
+  border-bottom-right-radius: 6px;
 }
 
 .message.model {
-    background-color: #e4e6eb;
-    color: #333;
-    align-self: flex-start;
-    border-bottom-left-radius: 2px;
+  align-self: flex-start;
+  background: var(--bubble-model);
+  color: var(--text);
+  border-bottom-left-radius: 6px;
 }
 
+.message.thinking {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* Input area */
 form {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    background-color: #f0f0f0;
-    border-top: 1px solid #ccc;
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--card);
 }
 
 form input[type="text"] {
-    flex: 1;
-    padding: 10px 14px;
-    border: 1px solid #bbb;
-    border-radius: 20px;
-    outline: none;
-    font-size: 15px;
-    transition: border-color 0.2s ease;
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+  font-size: 15px;
+  outline: none;
+  background: transparent;
+  color: var(--text);
 }
 
 form input[type="text"]:focus {
-    border-color: #0078d7;
+  border-color: var(--accent);
 }
 
 form button {
-    margin-left: 10px;
-    padding: 10px 18px;
-    background-color: #0078d7;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.2s ease;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
 form button:hover {
-    background-color: #005fa3;
+  background: #dc2626;
+}
+
+form button:active {
+  transform: scale(0.98);
 }
 
 .chat-messages::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
-
 .chat-messages::-webkit-scrollbar-thumb {
-    background-color: #ccc;
-    border-radius: 4px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
 }
 
-.chat-messages::-webkit-scrollbar-thumb:hover {
-    background-color: #aaa;
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 8px 12px;
+  font-size: 15px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.20);
+}
+.theme-toggle:hover {
+  background: var(--bubble-model);
+}
+
+.dark form {
+  border-top: 1px solid #cccccc50;
+}
+.dark .chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
 }
