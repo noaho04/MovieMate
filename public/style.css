@@ -147,3 +147,30 @@ form button:active {
 .dark .chat-messages::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.15);
 }
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: var(--card);
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.chat-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.chat-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text);
+  user-select: none;
+}

@@ -7,7 +7,7 @@ session_start();
 if (!isset($_SESSION['messages'])) {
     $_SESSION['messages'] = [[
         "role" => "model",
-        "content" => "Hi, I’m MovieMate. Ask me anything about movies!"
+        "content" => "Hei, jeg er MovieMate. Spør meg om hva som helst film-relatert!"
     ]];
 }
 
@@ -62,6 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
     <body>
         <button id="themeToggle" class="theme-toggle">🌙</button>
         <div class="chat-container">
+            <div class="chat-header">
+                <img src="MovieMate_logo.png" alt="MovieMate logo" class="chat-logo">
+                <h1 class="chat-title">MovieMate</h1>
+            </div>
             <div class="chat-messages">
                 <!--TODO message separation by . to avoid overly long messages from AI-->
                 <?php
@@ -117,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
 
                 const res = await fetch(window.location.href, {
                     method: 'POST',
-                    headers: { 'X-Requested-With': 'fetch' }, // <-- tells PHP to return JSON
+                    headers: { 'X-Requested-With': 'fetch' },
                     body
                 });
 
