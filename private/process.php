@@ -12,11 +12,11 @@ if (!isset($_SESSION['messages'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
-    $userMessage = trim(strip_tags($_POST['message']));
+    $user_message = trim(strip_tags($_POST['message']));
 
-    if ($userMessage !== '') {
+    if ($user_message !== '') {
         // Save user message
-        $_SESSION['messages'][] = ["role" => "user", "content" => $userMessage];
+        $_SESSION['messages'][] = ["role" => "user", "content" => $user_message];
 
         // Build chatlog (skip greeting)
         $chatlog = [];
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
         }
 
         // Get model reply + save
-        $reply = call_api($chatlog);
+        $reply = callAPI($chatlog);
         $_SESSION['messages'][] = ["role" => "model", "content" => $reply];
     }
 
