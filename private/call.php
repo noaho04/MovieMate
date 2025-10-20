@@ -1,6 +1,6 @@
 <?php
 function call_api($chatlog) {
-    include "APIKEY.php";
+    include "API_KEY.php";
 
     $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
