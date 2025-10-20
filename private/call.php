@@ -17,7 +17,7 @@ function call_api($chatlog) {
 
     // Set up headers for request
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "x-goog-api-key: $api_key",
+        "x-goog-api-key: $API_KEY",
         "Content-Type: application/json"
     ]);
     // Define it as a POST request, and pass $data as json
