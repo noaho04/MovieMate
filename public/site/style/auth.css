@@ -1,0 +1,302 @@
+/* Authentication Modal and Styles */
+
+/* Modal Overlay */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+/* Modal Content Box */
+.modal-content {
+    background-color: var(--card);
+    padding: 30px;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 380px;
+    position: relative;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Modal Close Button */
+.modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.2s;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: var(--text);
+}
+
+/* Auth Forms */
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.auth-form.hidden {
+    display: none;
+}
+
+.auth-form h2 {
+    text-align: center;
+    margin: 0 0 18px 0;
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* Override global form styling for auth forms */
+.auth-form form {
+    display: block !important;
+    padding: 0 !important;
+    border: none !important;
+    gap: 0 !important;
+    background: none !important;
+    border-radius: 8px;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 11px 12px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+    background: var(--card);
+    color: var(--text);
+    font-family: inherit;
+    height: 44px;
+}
+
+.auth-form input::placeholder {
+    color: #999;
+}
+
+.dark .auth-form input {
+    background-color: var(--card);
+    border-color: #444;
+    color: var(--text);
+    border-radius: 8px;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.2);
+}
+
+/* Auth Button */
+.auth-btn {
+    width: 100%;
+    padding: 11px 14px;
+    background-color: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    font-weight: 600;
+    font-family: inherit;
+    height: 44px;
+}
+
+.auth-btn:hover {
+    background-color: #dc2626;
+}
+
+.auth-btn:active {
+    transform: scale(0.98);
+}
+
+/* Auth Toggle Link */
+.auth-toggle {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 13px;
+    color: #666;
+}
+
+.auth-toggle a {
+    color: var(--accent);
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.auth-toggle a:hover {
+    text-decoration: underline;
+}
+
+/* Error Message */
+.auth-error {
+    background-color: #fee2e2;
+    color: #991b1b;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-top: 12px;
+    border-left: 3px solid var(--accent);
+    animation: slideIn 0.3s ease-out;
+    font-size: 13px;
+}
+
+.auth-error.hidden {
+    display: none;
+}
+
+.dark .auth-error {
+    background-color: #5a1a1a;
+    color: #fca5a5;
+}
+
+/* Header Auth Button */
+.auth-btn-header {
+    position: fixed;
+    top: 20px;
+    right: 70px;
+    padding: 8px 16px;
+    background-color: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 600;
+    z-index: 100;
+    transition: background-color 0.2s;
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.auth-btn-header:hover {
+    background-color: #dc2626;
+}
+
+/* User Menu Container */
+.user-menu-container {
+    position: fixed;
+    top: 20px;
+    right: 70px;
+    z-index: 100;
+}
+
+.user-menu-btn {
+    background-color: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.user-menu-btn:hover {
+    background-color: #dc2626;
+}
+
+/* User Menu Dropdown */
+.user-menu {
+    position: absolute;
+    top: 38px;
+    right: 0;
+    background-color: var(--card);
+    border: 1px solid #ddd;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 140px;
+    overflow: hidden;
+}
+
+.user-menu.hidden {
+    display: none;
+}
+
+.dark .user-menu {
+    border-color: #444;
+}
+
+.menu-item {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--text);
+    transition: background-color 0.2s;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 500;
+}
+
+.menu-item:first-child {
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.menu-item:last-child {
+    border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.menu-item:hover {
+    background-color: #f0f0f0;
+}
+
+.dark .menu-item:hover {
+    background-color: #2a2a2a;
+}
+
+.menu-item.logout-btn:hover {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.dark .menu-item.logout-btn:hover {
+    background-color: #5a1a1a;
+    color: #fca5a5;
+}

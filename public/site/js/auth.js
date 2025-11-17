@@ -1,0 +1,155 @@
+// Authentication JavaScript handler
+
+/**
+ * Open authentication modal
+ */
+function openAuthModal() {
+    document.getElementById('authModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
+}
+
+/**
+ * Close authentication modal
+ */
+function closeAuthModal() {
+    document.getElementById('authModal').classList.add('hidden');
+    document.body.style.overflow = 'auto'; // Re-enable scrolling
+    clearAuthError();
+}
+
+/**
+ * Toggle between login and signup forms
+ */
+function toggleAuthForm() {
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+
+    loginForm.classList.toggle('active');
+    loginForm.classList.toggle('hidden');
+
+    signupForm.classList.toggle('active');
+    signupForm.classList.toggle('hidden');
+
+    clearAuthError();
+}
+
+/**
+ * Toggle user menu dropdown
+ */
+function toggleUserMenu() {
+    document.getElementById('userMenu').classList.toggle('hidden');
+}
+
+/**
+ * Show error message in auth modal
+ */
+function showAuthError(message) {
+    const errorDiv = document.getElementById('authError');
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('hidden');
+}
+
+/**
+ * Clear error message
+ */
+function clearAuthError() {
+    document.getElementById('authError').classList.add('hidden');
+    document.getElementById('authError').textContent = '';
+}
+
+/**
+ * Handle login form submission
+ */
+document.getElementById('loginFormElement')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+
+    try {
+        const response = await fetch('../private/auth.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'action=login&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Redirect to index.php to refresh and show logged in state
+            window.location.href = 'index.php';
+        } else {
+            showAuthError(data.message);
+        }
+    } catch (error) {
+        showAuthError('En feil oppstod. Prøv igjen.');
+        console.error('Login error:', error);
+    }
+});
+
+/**
+ * Handle signup form submission
+ */
+document.getElementById('signupFormElement')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const username = document.getElementById('signupUsername').value;
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+
+    try {
+        const response = await fetch('../private/auth.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'action=signup&username=' + encodeURIComponent(username) + '&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showAuthError('Bruker registrert! Logg inn nå.');
+            // Switch to login form
+            setTimeout(() => {
+                toggleAuthForm();
+            }, 1500);
+        } else {
+            showAuthError(data.message);
+        }
+    } catch (error) {
+        showAuthError('En feil oppstod. Prøv igjen.');
+        console.error('Signup error:', error);
+    }
+});
+
+/**
+ * Handle logout
+ */
+function logout() {
+    if (confirm('Er du sikker på at du vil logge ut?')) {
+        // Create a form and submit it as POST to prevent URL manipulation
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '../private/auth.php';
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'action';
+        input.value = 'logout';
+
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Close modal when clicking outside of it
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('authModal');
+    if (event.target === modal) {
+        closeAuthModal();
+    }
+});

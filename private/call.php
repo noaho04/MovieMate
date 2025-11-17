@@ -33,7 +33,16 @@ function callAPI($chatlog) {
     } else {
         $result = json_decode($response, true);
         // Get the resulting text from API-response (add checks for eventual error responses, and default error response from AI as message)
-        $result = $result['candidates'][0]['content']['parts'][0]['text'];
+        if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
+            $result = $result['candidates'][0]['content']['parts'][0]['text'];
+        } else {
+            // Handle API error responses
+            if (isset($result['error'])) {
+                $result = "API Error: " . $result['error']['message'];
+            } else {
+                $result = "Unexpected API response: " . json_encode($result);
+            }
+        }
     }
     curl_close($ch);
     return $result;
