@@ -100,7 +100,7 @@
     padding: 11px 12px;
     margin-bottom: 12px;
     border: 1px solid #ccc;
-    border-radius: 8px;
+    border-radius: 8px !important;
     font-size: 15px;
     box-sizing: border-box;
     transition: border-color 0.2s;

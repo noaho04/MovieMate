@@ -1,7 +1,6 @@
 <?php
 // Database configuration and helper functions for authentication
 
-// Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -31,10 +30,8 @@ function verifyPassword($password, $hash) {
     return password_verify($password, $hash);
 }
 
-/**
- * Register a new user with SQL injection protection
- * Returns array with success status and message
- */
+/* Register a new user with SQL injection protection
+Returns array with success status and message */
 function registerUser($username, $email, $password) {
     global $conn;
 
@@ -87,16 +84,115 @@ function registerUser($username, $email, $password) {
     }
 }
 
-/**
- * Login user with SQL injection protection
- * Returns array with success status and message
- */
+/* Check if user account is locked due to failed login attempts
+Returns array with locked status and remaining time */
+function checkLoginLock($username) {
+    global $conn;
+
+    $stmt = $conn->prepare("SELECT login_attempts, locked_until FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 0) {
+        $stmt->close();
+        return ["locked" => false, "message" => ""];
+    }
+
+    $user = $result->fetch_assoc();
+    $stmt->close();
+
+    // Check if account is locked and if lockout period has expired
+    if ($user['locked_until']) {
+        $lockout_time = new DateTime($user['locked_until']);
+        $now = new DateTime();
+
+        if ($now < $lockout_time) {
+            $remaining = $lockout_time->diff($now);
+            $minutes = $remaining->i;
+            $seconds = $remaining->s;
+            return [
+                "locked" => true,
+                "message" => "Kontoen er låst. Prøv igjen om {$minutes} minutter og {$seconds} sekunder."
+            ];
+        } else {
+            // Lockout period has expired, reset attempts
+            $reset_stmt = $conn->prepare("UPDATE users SET login_attempts = 0, locked_until = NULL WHERE username = ?");
+            $reset_stmt->bind_param("s", $username);
+            $reset_stmt->execute();
+            $reset_stmt->close();
+        }
+    }
+
+    return ["locked" => false, "message" => ""];
+}
+
+// Record failed login attempt
+function recordFailedAttempt($username) {
+    global $conn;
+
+    // Debug
+    error_log("Recording failed attempt for: " . $username);
+
+    // Increment failed attempts
+    $stmt = $conn->prepare("UPDATE users SET login_attempts = login_attempts + 1 WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    if (!$stmt->execute()) {
+        error_log("Error incrementing attempts: " . $stmt->error);
+    }
+    $stmt->close();
+
+    // Check current attempt count
+    $check_stmt = $conn->prepare("SELECT login_attempts FROM users WHERE username = ?");
+    $check_stmt->bind_param("s", $username);
+    $check_stmt->execute();
+    $result = $check_stmt->get_result();
+    $user = $result->fetch_assoc();
+    $check_stmt->close();
+
+    error_log("Current attempt count: " . $user['login_attempts']);
+
+    // If 3 failed attempts, lock the account for 1 hour
+    if ($user['login_attempts'] >= 3) {
+        $lockout_time = date('Y-m-d H:i:s', strtotime('+1 hour'));
+        $lock_stmt = $conn->prepare("UPDATE users SET locked_until = ? WHERE username = ?");
+        $lock_stmt->bind_param("ss", $lockout_time, $username);
+        if (!$lock_stmt->execute()) {
+            error_log("Error setting lockout: " . $lock_stmt->error);
+        }
+        $lock_stmt->close();
+
+        error_log("Account locked until: " . $lockout_time);
+        return ["attempts" => 3, "locked" => true];
+    }
+
+    return ["attempts" => $user['login_attempts'], "locked" => false];
+}
+
+// Reset login attempts on successful login
+function resetLoginAttempts($username) {
+    global $conn;
+
+    $stmt = $conn->prepare("UPDATE users SET login_attempts = 0, locked_until = NULL WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $stmt->close();
+}
+
+/* Login user with SQL injection protection
+Returns array with success status and message */
 function loginUser($username, $password) {
     global $conn;
 
     // Validate inputs
     if (empty($username) || empty($password)) {
         return ["success" => false, "message" => "Brukernavn og passord er påkrevd"];
+    }
+
+    // Check if account is locked
+    $lock_check = checkLoginLock($username);
+    if ($lock_check['locked']) {
+        return ["success" => false, "message" => $lock_check['message']];
     }
 
     // Get user from database using prepared statement
@@ -115,8 +211,18 @@ function loginUser($username, $password) {
 
     // Verify password
     if (!verifyPassword($password, $user['password'])) {
-        return ["success" => false, "message" => "Brukernavn eller passord er feil"];
+        // Record failed attempt
+        $attempt = recordFailedAttempt($username);
+        if ($attempt['locked']) {
+            return ["success" => false, "message" => "Kontoen er låst etter 3 mislykkede innloggingsforsøk. Prøv igjen om 1 time."];
+        } else {
+            $remaining = 3 - $attempt['attempts'];
+            return ["success" => false, "message" => "Brukernavn eller passord er feil. Du har {$remaining} forsøk igjen."];
+        }
     }
+
+    // Reset login attempts on successful login
+    resetLoginAttempts($username);
 
     // Set session variables
     $_SESSION['user_id'] = $user['id'];

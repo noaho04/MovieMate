@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     preferred_genre VARCHAR(50),
     is_admin TINYINT(1) DEFAULT 0,
+    login_attempts INT DEFAULT 0,
+    locked_until DATETIME,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
