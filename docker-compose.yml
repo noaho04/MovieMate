@@ -2,8 +2,43 @@ services:
   web:
     build:
       context: .
-      dockerfile: container-build/Dockerfile
+      dockerfile: container-build/web/Dockerfile
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=moviemate
+      - MYSQL_USER=dbuser
+      - MYSQL_PASSWORD=mm_Passwd!
     ports:
-    - "8081:80"
+      - 8081:80
     volumes:
-    - .:/var/www
+      - .:/var/www
+    depends_on:
+      - db
+
+  db:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_DATABASE=moviemate
+      - MYSQL_ROOT_PASSWORD=MM_passwd1!
+      - MYSQL_USER=dbuser
+      - MYSQL_PASSWORD=mm_Passwd!
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links: 
+      - db:db
+    ports:
+      - 8000:80
+    environment:
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: mm_Passwd!
+      MYSQL_ROOT_PASSWORD: MM_passwd1!
+
+volumes:
+  mysql_data: { driver: local }
