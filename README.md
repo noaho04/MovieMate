@@ -1,5 +1,5 @@
 ### Test Admin Login
 - Username
- - moviemateadminjohn
+     - moviemateadminjohn
 - Password
- - AdminPass123!
+     - AdminPass123!
