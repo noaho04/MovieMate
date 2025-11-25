@@ -1,6 +1,6 @@
 <?php
-require "../private/process.php";
-require "../private/db.php";
+require "../private/api/process.php";
+require "../private/db/db.php";
 
 // Get current user if logged in
 $current_user = getCurrentUser();

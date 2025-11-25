@@ -1,5 +1,5 @@
 <?php
-require "../private/db.php";
+require "../private/db/db.php";
 
 // Check if user is logged in and is admin
 if (!isLoggedIn() || !isAdmin()) {
