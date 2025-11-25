@@ -13,13 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'login') {
         $username = isset($_POST['username']) ? trim($_POST['username']) : '';
         $password = isset($_POST['password']) ? trim($_POST['password']) : '';
-                // Debug: Log the login attempt
-        error_log("Login attempt for username: " . $username);
 
         $result = loginUser($username, $password);
-
-        // Debug: Log the result
-        error_log("Login result: " . json_encode($result));
 
         echo json_encode($result);
         exit;
