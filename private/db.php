@@ -1,15 +1,14 @@
 <?php
 // Database configuration and helper functions for authentication
-
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 // Database connection details
-$db_host = "localhost";
-$db_user = "root";
-$db_pass = "";
-$db_name = "moviemate";
+$db_host = getenv("MYSQL_HOST");
+$db_user = getenv("MYSQL_USER");
+$db_pass = getenv("MYSQL_PASSWORD");
+$db_name = getenv("MYSQL_DATABASE");
 
 // Create connection
 $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
@@ -20,7 +19,7 @@ if ($conn->connect_error) {
 }
 $conn->set_charset("utf8");
 
-// Hash password using PHP's built-in password_hash function
+// Hash password
 function hashPassword($password) {
     return password_hash($password, PASSWORD_BCRYPT);
 }
@@ -30,20 +29,32 @@ function verifyPassword($password, $hash) {
     return password_verify($password, $hash);
 }
 
-/* Register a new user with SQL injection protection
-Returns array with success status and message */
+// Register new user, output array with state and message
 function registerUser($username, $email, $password) {
     global $conn;
+    $errors = array();
 
     // Validate inputs
     if (empty($username) || empty($email) || empty($password)) {
-        return ["success" => false, "message" => "Alle felt må fylles inn"];
+        $errors[] = "Alle felt må fylles inn";
+    }
+    
+    if (!preg_match('/^[A-Za-z0-9]+$/', $username)) {
+        $errors[] = "Brukernavn kan kun bestå av bokstaver og tall";
+    }
+    
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "E-post ikke gyldig.";
     }
 
     if (strlen($password) < 6) {
-        return ["success" => false, "message" => "Passordet må være minst 6 tegn"];
+        $errors[] = "Passordet må være minst 6 tegn";
     }
 
+    if (!(empty($errors))) {
+        return ["success" => false, $errors];
+    }
+    
     // Check if username already exists using prepared statement
     $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
     $stmt->bind_param("s", $username);
@@ -262,7 +273,8 @@ function getCurrentUser() {
 // Logout user
 function logoutUser() {
     session_destroy();
-    header("Location: ../public/index.php");
+    // Redirect to the public index using an absolute path so the URL resolves
+    header("Location: /index.php");
     exit;
 }
 ?>

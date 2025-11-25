@@ -1,9 +1,7 @@
 <?php
-// Authentication request handler
 // Handles login and signup requests via AJAX
 
-session_start();
-require_once "db.php";
+require_once __DIR__ . '/db.php';
 
 header('Content-Type: application/json');
 
@@ -15,8 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'login') {
         $username = isset($_POST['username']) ? trim($_POST['username']) : '';
         $password = isset($_POST['password']) ? trim($_POST['password']) : '';
-
-        // Debug: Log the login attempt
+                // Debug: Log the login attempt
         error_log("Login attempt for username: " . $username);
 
         $result = loginUser($username, $password);
@@ -50,4 +47,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo json_encode($response);
     exit;
 }
+
 ?>

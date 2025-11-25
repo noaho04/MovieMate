@@ -1,4 +1,5 @@
 # MovieMate TODO
 
-- Fix CSS to be more dynamic across pages (only one CSS file?)
-- Functionality for the chatbot to know the users preffered genre of movies
+- Break down css components
+- Get genre with user and pass to sysinstruct
+- Replace authentication js placeholder parts with php

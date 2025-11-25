@@ -32,18 +32,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['preferred_genre'])) {
     $stmt->close();
 }
 
-// List of available genres
+// List of available genres, update later to get from db
 $genres = [
     "Action",
-    "Comedy",
+    "Komedie",
     "Drama",
-    "Horror",
-    "Romance",
-    "Sci-Fi",
+    "Skrekk",
+    "Romantisk",
+    "Sci-fi",
     "Thriller",
-    "Animation",
-    "Adventure",
-    "Crime"
+    "Animasjon",
+    "Eventyr",
+    "Krim"
 ];
 ?>
 <!DOCTYPE html>
@@ -51,7 +51,7 @@ $genres = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil - MovieMate</title>
+    <title>Profil</title>
     <link href="site/style/style.css" rel="stylesheet">
     <link href="site/style/auth.css" rel="stylesheet">
     <link href="site/style/pages.css" rel="stylesheet">
@@ -126,7 +126,6 @@ $genres = [
             </div>
         </div>
     </div>
-
     <!-- Navigation Footer -->
     <div class="page-footer">
         <button class="user-menu-btn" onclick="window.location.href='index.php';">Tilbake til chat</button>

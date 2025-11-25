@@ -20,13 +20,17 @@ function callAPI($chatlog) {
         "x-goog-api-key: $API_KEY",
         "Content-Type: application/json"
     ]);
+
     // Define it as a POST request, and pass $data as json
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
     // Return the response instead of dumping it out
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
     // Execute the request
     $response = curl_exec($ch);
+    
     // Simple error handling for curl errors (expand upon, + api errors)
     if (curl_errno($ch)) {
         $result = "cURL error: " . curl_error($ch);

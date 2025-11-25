@@ -1,25 +1,14 @@
-// Authentication JavaScript handler
-
-/**
- * Open authentication modal
- */
 function openAuthModal() {
     document.getElementById('authModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden'; // Prevent scrolling
 }
 
-/**
- * Close authentication modal
- */
 function closeAuthModal() {
     document.getElementById('authModal').classList.add('hidden');
     document.body.style.overflow = 'auto'; // Re-enable scrolling
     clearAuthError();
 }
 
-/**
- * Toggle between login and signup forms
- */
 function toggleAuthForm() {
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
@@ -33,33 +22,22 @@ function toggleAuthForm() {
     clearAuthError();
 }
 
-/**
- * Toggle user menu dropdown
- */
 function toggleUserMenu() {
     document.getElementById('userMenu').classList.toggle('hidden');
 }
 
-/**
- * Show error message in auth modal
- */
 function showAuthError(message) {
     const errorDiv = document.getElementById('authError');
     errorDiv.textContent = message;
     errorDiv.classList.remove('hidden');
 }
 
-/**
- * Clear error message
- */
 function clearAuthError() {
     document.getElementById('authError').classList.add('hidden');
     document.getElementById('authError').textContent = '';
 }
 
-/**
- * Handle login form submission
- */
+//Handle login form submission
 document.getElementById('loginFormElement')?.addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -67,7 +45,7 @@ document.getElementById('loginFormElement')?.addEventListener('submit', async fu
     const password = document.getElementById('loginPassword').value;
 
     try {
-        const response = await fetch('../private/auth.php', {
+        const response = await fetch('/auth.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -89,9 +67,7 @@ document.getElementById('loginFormElement')?.addEventListener('submit', async fu
     }
 });
 
-/**
- * Handle signup form submission
- */
+// Handle signup
 document.getElementById('signupFormElement')?.addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -100,7 +76,7 @@ document.getElementById('signupFormElement')?.addEventListener('submit', async f
     const password = document.getElementById('signupPassword').value;
 
     try {
-        const response = await fetch('../private/auth.php', {
+        const response = await fetch('/auth.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -111,11 +87,8 @@ document.getElementById('signupFormElement')?.addEventListener('submit', async f
         const data = await response.json();
 
         if (data.success) {
-            showAuthError('Bruker registrert! Logg inn nå.');
-            // Switch to login form
-            setTimeout(() => {
-                toggleAuthForm();
-            }, 1500);
+            alert('Bruker registrert! Logg inn nå.');
+            toggleAuthForm();
         } else {
             showAuthError(data.message);
         }
@@ -133,7 +106,7 @@ function logout() {
         // Create a form and submit it as POST to prevent URL manipulation
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '../private/auth.php';
+        form.action = '/auth.php';
 
         const input = document.createElement('input');
         input.type = 'hidden';
