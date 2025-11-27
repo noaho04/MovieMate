@@ -8,43 +8,23 @@ if (!isLoggedIn()) {
 }
 
 $current_user = getCurrentUser();
+$genres = getGenres();
 
 // Handle genre preference update
-$message = '';
-$message_type = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['preferred_genre'])) {
-    $preferred_genre = isset($_POST['preferred_genre']) ? trim($_POST['preferred_genre']) : '';
+    $preferred_genre = trim($_POST['preferred_genre']);
 
-    // Update genre preference using prepared statement
-    $stmt = $conn->prepare("UPDATE users SET preferred_genre = ? WHERE id = ?");
-    $stmt->bind_param("si", $preferred_genre, $_SESSION['user_id']);
-
-    if ($stmt->execute()) {
-        $message = "Sjanger lagret!";
-        $message_type = "success";
-        // Refresh user data
-        $current_user = getCurrentUser();
+    // allow clearing the preference with empty string or enforce valid genre
+    if ($preferred_genre === '' || in_array($preferred_genre, $genres, true)) {
+        if (updateGenre($_SESSION['user_id'], $preferred_genre)) {
+            $current_user = getCurrentUser();
+        } else {
+            $error_message = "Kunne ikke lagre sjanger. Prøv igjen.";
+        }
     } else {
-        $message = "Feil ved lagring av sjanger";
-        $message_type = "error";
+        $error_message = "Ugyldig sjanger valgt.";
     }
-    $stmt->close();
 }
-
-// List of available genres, update later to get from db
-$genres = [
-    "Action",
-    "Komedie",
-    "Drama",
-    "Skrekk",
-    "Romantisk",
-    "Sci-fi",
-    "Thriller",
-    "Animasjon",
-    "Eventyr",
-    "Krim"
-];
 ?>
 <!DOCTYPE html>
 <html>
@@ -91,13 +71,9 @@ $genres = [
             <div class="form-section">
                 <h2>Foretrukket sjanger</h2>
                 <p class="section-description">Velg din foretrukne sjanger slik at MovieMate kan gi bedre anbefalinger</p>
-
-                <?php if ($message): ?>
-                <div class="message message-<?php echo $message_type; ?>">
-                    <?php echo htmlspecialchars($message); ?>
-                </div>
+                <?php if (!empty($error_message)): ?>
+                    <div><?= htmlspecialchars($error_message) ?></div>
                 <?php endif; ?>
-
                 <form method="post">
                     <select name="preferred_genre" class="form-select">
                         <option value="">Velg en sjanger...</option>

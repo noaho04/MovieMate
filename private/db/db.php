@@ -19,6 +19,35 @@ if ($conn->connect_error) {
 }
 $conn->set_charset("utf8");
 
+function getGenres() {
+    global $conn;
+    $stmt = $conn->prepare("SELECT genre_name FROM genres");
+
+    if (!$stmt->execute()) {
+        $stmt->close();
+        return ["Feil under henting av sjangere"];
+    }
+    
+    $result = $stmt->get_result();
+    $stmt->close();
+    // Return list of genres
+    return array_column($result->fetch_all(MYSQLI_ASSOC), 'genre_name');
+}
+
+function updateGenre($user_id, $preferred_genre) {
+    global $conn;
+    // Update genre preference using prepared statement
+    $stmt = $conn->prepare("UPDATE users SET preferred_genre = ? WHERE id = ?");
+    $stmt->bind_param("si", $preferred_genre, $user_id);
+
+    if (!$stmt->execute()) {
+        $stmt->close();
+        return False;
+    }
+    
+    return True;
+}
+
 // Hash password
 function hashPassword($password) {
     return password_hash($password, PASSWORD_BCRYPT);
