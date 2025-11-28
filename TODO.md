@@ -1,6 +1,5 @@
 # MovieMate TODO
 
 - Break down css components
-- Get genre with user and pass to sysinstruct
-- Add statistic, questions asked, maybe a familiarity bar?
+- Fix double submit
 - Search omdb, find fav movie, add to db?
