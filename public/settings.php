@@ -19,17 +19,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($action === 'update_username') {
             $new_username = isset($_POST['new_username']) ? trim($_POST['new_username']) : '';
-
-            $message = updateUsername($new_username, $current_user['id']);
-            if ($message['type'] !== "error") {
+            if (empty($new_username)) {
+                $message['type'] = "error";
+                $message['text'] = "Brukernavn kan ikke være tomt.";
+            } elseif (!validateUsername($new_username)) {
+                $message['type'] = "error";
+                $message['text'] = "Brukernavn er ikke gyldig.";
+            } elseif (isTaken($new_username, "username")) {
+                $message['type'] = "error";
+                $message['text'] = "Brukernavn er allerede tatt";
+            } else {
+                $message = updateUsername($new_username, $current_user['id']);
                 $current_user = getCurrentUser();
             }
 
         } else if ($action === 'update_email') {
             $new_email = isset($_POST['new_email']) ? trim($_POST['new_email']) : '';
-
-            $message = updateEmail($new_email, $current_user['id']);
-            if ($message['type'] !== "error") {
+            if (empty($new_email)) {
+                $message['type'] = "error";
+                $message['text'] = "E-post kan ikke være tom.";
+            } elseif (!validateEmail($new_email)) {
+                $message['type'] = "error";
+                $message['text'] = "E-post ikke gyldig.";
+            } elseif (isTaken($new_email, "email")) {
+                $message['type'] = "error";
+                $message['text'] = "E-post allerede i bruk.";
+            } else {
+                $message = updateEmail($new_email, $current_user['id']);
                 $current_user = getCurrentUser();
             }
 
@@ -37,11 +53,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $current_password = isset($_POST['current_password']) ? trim($_POST['current_password']) : '';
             $new_password = isset($_POST['new_password']) ? trim($_POST['new_password']) : '';
             $confirm_password = isset($_POST['confirm_password']) ? trim($_POST['confirm_password']) : '';
-            if (!verifyPassword($current_password, $current_user['password'])) {
+            if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
+                $message['type'] = "error";
+                $message['text'] = "Alle felt må fylles inn.";
+            } elseif (!verifyPassword($current_password, $current_user['password'])) {
                 $message['type'] = "error";
                 $message['text'] = "Gjeldende passord er feil.";
+            } elseif (!validatePassword($new_password)) {
+                $message['type'] = "error";
+                $message['text'] = "Passord må inneholde minst 10 tegn og ett spesialtegn, tall og stor bokstav.";
+            } elseif ($new_password !== $confirm_password) {
+                $message['type'] = "error";
+                $message['text'] = "Nye passord matcher ikke.";
             } else {
                 $message = updatePassword($new_password, $current_user['id']);
+                $current_user = getCurrentUser();
             }
         }
     }   
@@ -70,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="page-container">
         <div class="page-content">
 
-            <?php if (isset($message)): ?>
+            <?php if (isset($message) && !empty($message)): ?>
             <div class="message message-<?php echo $message['type']; ?>">
                 <?php echo htmlspecialchars($message['text']); ?>
             </div>
@@ -95,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <input type="hidden" name="action" value="update_email">
                     <label for="new_email">Ny e-postadresse</label>
-                    <input type="email" id="new_email" name="new_email" value="<?php echo htmlspecialchars($current_user['email']); ?>" required>
+                    <input type="text" id="new_email" name="new_email" value="<?php echo htmlspecialchars($current_user['email']); ?>" required>
                     <button type="submit" class="auth-btn">Lagre e-postadresse</button>
                 </form>
             </div>

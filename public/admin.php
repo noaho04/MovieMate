@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <div class="page-container">
         <div class="page-content">
 
-            <?php if (isset($message)): ?>
+            <?php if (isset($message) && !empty($message)): ?>
             <div class="message message-<?php echo $message['type']; ?>">
                 <?php echo htmlspecialchars($message['text']); ?>
             </div>

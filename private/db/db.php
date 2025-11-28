@@ -319,21 +319,6 @@ function logoutUser() {
 }
 
 function updateUsername($new_username, $user_id) {
-    if (empty($new_username)) {
-        $message['type'] = "error";
-        $message['text'] = "Brukernavn kan ikke være tomt.";
-        return $message;
-    }
-    if (!validateUsername($new_username)) {
-        $message['type'] = "error";
-        $message['text'] = "Brukernavn er ikke gyldig.";
-        return $message;
-    }
-    if (isTaken($new_username, "username")) {
-        $message['type'] = "error";
-        $message['text'] = "Brukernavn er allerede tatt";
-        return $message;
-    }
     global $conn;
     // Update username
     $stmt = $conn->prepare("UPDATE users SET username = ? WHERE id = ?");
@@ -352,21 +337,6 @@ function updateUsername($new_username, $user_id) {
 }
 
 function updateEmail($new_email, $user_id) {
-    if (empty($new_email)) {
-        $message['type'] = "error";
-        $message['text'] = "E-post kan ikke være tom.";
-        return $message;
-    }
-    if (!validateEmail($new_email)) {
-        $message['type'] = "error";
-        $message['text'] = "E-post ikke gyldig.";
-        return $message;
-    }
-    if (isTaken($new_email, "email")) {
-        $message['type'] = "error";
-        $message['text'] = "E-post allerede i bruk.";
-        return $message;
-    }
     global $conn;
     // Update email
     $stmt = $conn->prepare("UPDATE users SET email = ? WHERE id = ?");
@@ -385,23 +355,8 @@ function updateEmail($new_email, $user_id) {
 }
 
 function updatePassword($new_password, $user_id) {
-    if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
-        $message['type'] = "error";
-        $message['text'] = "Alle felt må fylles inn.";
-        return $message;
-    }
-    if ($new_password !== $confirm_password) {
-        $message['type'] = "error";
-        $message['text'] = "Nye passord matcher ikke.";
-        return $message;
-    } 
-    if (!validatePassword($new_password)) {
-        $message['type'] = "error";
-        $message['text'] = "Passord må inneholde minst 10 tegn og ett spesialtegn, tall og stor bokstav.";
-        return $message;
-    } 
     global $conn;
-    
+
     // Update password
     $hashed_password = hashPassword($new_password);
     $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
