@@ -289,6 +289,8 @@
     width: 100%;
     padding: 15px;
     text-align: center;
+    /* change for dark mode */
+    background-color: white;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 

@@ -7,22 +7,31 @@ if (!isLoggedIn()) {
     exit;
 }
 
+ensureCsrfToken();
+
 $current_user = getCurrentUser();
 $genres = getGenres();
 
 // Handle genre preference update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['preferred_genre'])) {
-    $preferred_genre = trim($_POST['preferred_genre']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    $preferred_genre = $_POST['preferred_genre'] ?? '';
 
-    // allow clearing the preference with empty string or enforce valid genre
-    if ($preferred_genre === '' || in_array($preferred_genre, $genres, true)) {
-        if (updateGenre($_SESSION['user_id'], $preferred_genre)) {
-            $current_user = getCurrentUser();
-        } else {
-            $error_message = "Kunne ikke lagre sjanger. Prøv igjen.";
-        }
-    } else {
+    // Validate CSRF
+    if (!validateCsrfToken($csrf_token)) {
+        $error_message = "Ugyldig CSRF token.";
+    }
+    // Validate genre
+    elseif (!($preferred_genre === '' || in_array($preferred_genre, $genres, true))) {
         $error_message = "Ugyldig sjanger valgt.";
+    }
+    // Try to update genre
+    elseif (!updateGenre($_SESSION['user_id'], $preferred_genre)) {
+        $error_message = "Kunne ikke lagre sjanger. Prøv igjen.";
+    }
+    // Update values
+    else {
+        $current_user = getCurrentUser();
     }
 }
 ?>

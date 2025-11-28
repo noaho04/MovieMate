@@ -170,6 +170,10 @@
     text-decoration: underline;
 }
 
+#authError {
+    white-space: pre-line;
+}
+
 /* Error Message */
 .auth-error {
     background-color: #fee2e2;
