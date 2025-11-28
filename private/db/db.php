@@ -5,6 +5,7 @@ require_once __DIR__ . '/validation.php';
 // Database configuration and helper functions for authentication
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+    ensureCsrfToken();
 }
 
 // Database connection details
@@ -317,7 +318,7 @@ function logoutUser() {
     exit;
 }
 
-function updateUsername($new_username) {
+function updateUsername($new_username, $user_id) {
     if (empty($new_username)) {
         $message['type'] = "error";
         $message['text'] = "Brukernavn kan ikke være tomt.";
@@ -336,7 +337,7 @@ function updateUsername($new_username) {
     global $conn;
     // Update username
     $stmt = $conn->prepare("UPDATE users SET username = ? WHERE id = ?");
-    $stmt->bind_param("si", $new_username, $_SESSION['user_id']);
+    $stmt->bind_param("si", $new_username, $user_id);
 
     if ($stmt->execute()) {
         $message['type'] = "success";
@@ -350,7 +351,7 @@ function updateUsername($new_username) {
     return $message;
 }
 
-function updateEmail($new_email) {
+function updateEmail($new_email, $user_id) {
     if (empty($new_email)) {
         $message['type'] = "error";
         $message['text'] = "E-post kan ikke være tom.";
@@ -369,7 +370,7 @@ function updateEmail($new_email) {
     global $conn;
     // Update email
     $stmt = $conn->prepare("UPDATE users SET email = ? WHERE id = ?");
-    $stmt->bind_param("si", $new_email, $_SESSION['user_id']);
+    $stmt->bind_param("si", $new_email, $user_id);
 
     if ($stmt->execute()) {
         $message['type'] = "success";
@@ -383,11 +384,7 @@ function updateEmail($new_email) {
     return $message;
 }
 
-function updatePassword($new_password) {
-    $current_password = isset($_POST['current_password']) ? trim($_POST['current_password']) : '';
-    $new_password = isset($_POST['new_password']) ? trim($_POST['new_password']) : '';
-    $confirm_password = isset($_POST['confirm_password']) ? trim($_POST['confirm_password']) : '';
-
+function updatePassword($new_password, $user_id) {
     if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
         $message['type'] = "error";
         $message['text'] = "Alle felt må fylles inn.";
@@ -404,18 +401,11 @@ function updatePassword($new_password) {
         return $message;
     } 
     global $conn;
-    // Verify current password
-    $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
-    $stmt->bind_param("i", $_SESSION['user_id']);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
-    $stmt->close();
-
+    
     // Update password
     $hashed_password = hashPassword($new_password);
     $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
-    $stmt->bind_param("si", $hashed_password, $_SESSION['user_id']);
+    $stmt->bind_param("si", $hashed_password, $user_id);
 
     if ($stmt->execute()) {
         $message['type'] = "success";

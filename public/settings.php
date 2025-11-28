@@ -11,35 +11,40 @@ $current_user = getCurrentUser();
 
 // Handle settings updates
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = isset($_POST['action']) ? trim($_POST['action']) : '';
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $message['type'] = 'error';
+        $message['text'] = 'Ugyldig CSRF-token. Vennligst prøv igjen.';
+    } else {
+        $action = isset($_POST['action']) ? trim($_POST['action']) : '';
 
-    if ($action === 'update_username') {
-        $new_username = isset($_POST['new_username']) ? trim($_POST['new_username']) : '';
+        if ($action === 'update_username') {
+            $new_username = isset($_POST['new_username']) ? trim($_POST['new_username']) : '';
 
-        $message = updateUsername($new_username);
-        if ($message['type'] !== "error") {
-            $current_user = getCurrentUser();
+            $message = updateUsername($new_username, $user['id']);
+            if ($message['type'] !== "error") {
+                $current_user = getCurrentUser();
+            }
+
+        } else if ($action === 'update_email') {
+            $new_email = isset($_POST['new_email']) ? trim($_POST['new_email']) : '';
+
+            $message = updateEmail($new_email, $user['id']);
+            if ($message['type'] !== "error") {
+                $current_user = getCurrentUser();
+            }
+
+        } else if ($action === 'update_password') {
+            $current_password = isset($_POST['current_password']) ? trim($_POST['current_password']) : '';
+            $new_password = isset($_POST['new_password']) ? trim($_POST['new_password']) : '';
+            $confirm_password = isset($_POST['confirm_password']) ? trim($_POST['confirm_password']) : '';
+            if (!verifyPassword($current_password, $current_user['password'])) {
+                $message['type'] = "error";
+                $message['text'] = "Gjeldende passord er feil.";
+            } else {
+                $message = updatePassword($new_password, $user['id']);
+            }
         }
-
-    } else if ($action === 'update_email') {
-        $new_email = isset($_POST['new_email']) ? trim($_POST['new_email']) : '';
-
-        $message = updateEmail($new_email);
-        if ($message['type'] !== "error") {
-            $current_user = getCurrentUser();
-        }
-
-    } else if ($action === 'update_password') {
-        $current_password = isset($_POST['current_password']) ? trim($_POST['current_password']) : '';
-        $new_password = isset($_POST['new_password']) ? trim($_POST['new_password']) : '';
-        $confirm_password = isset($_POST['confirm_password']) ? trim($_POST['confirm_password']) : '';
-        if (!verifyPassword($current_password, $current_user['password'])) {
-            $message['type'] = "error";
-            $message['text'] = "Gjeldende passord er feil.";
-        } else {
-            $message = updatePassword($new_password);
-        }
-    }
+    }   
 }
 ?>
 <!DOCTYPE html>
@@ -75,6 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-section">
                 <h2>Endre brukernavn</h2>
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <input type="hidden" name="action" value="update_username">
                     <label for="new_username">Nytt brukernavn</label>
                     <input type="text" id="new_username" name="new_username" value="<?php echo htmlspecialchars($current_user['username']); ?>" required>
@@ -86,6 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-section">
                 <h2>Endre e-postadresse</h2>
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <input type="hidden" name="action" value="update_email">
                     <label for="new_email">Ny e-postadresse</label>
                     <input type="email" id="new_email" name="new_email" value="<?php echo htmlspecialchars($current_user['email']); ?>" required>
@@ -97,6 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-section">
                 <h2>Endre passord</h2>
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <input type="hidden" name="action" value="update_password">
                     <label for="current_password">Gjeldende passord</label>
                     <input type="password" id="current_password" name="current_password" required>
