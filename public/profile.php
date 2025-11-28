@@ -19,18 +19,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['preferred_genre'])) {
 
     // Validate CSRF
     if (!validateCsrfToken($csrf_token)) {
-        $error_message = "Ugyldig CSRF token.";
+        $message = "Ugyldig CSRF token.";
     }
     // Validate genre
     elseif (!($preferred_genre === '' || in_array($preferred_genre, $genres, true))) {
-        $error_message = "Ugyldig sjanger valgt.";
+        $message = "Ugyldig sjanger valgt.";
     }
     // Try to update genre
     elseif (!updateGenre($_SESSION['user_id'], $preferred_genre)) {
-        $error_message = "Kunne ikke lagre sjanger. Prøv igjen.";
+        $message = "Kunne ikke lagre sjanger. Prøv igjen.";
     }
     // Update values
     else {
+        $message = "Sjanger lagret!";
         $current_user = getCurrentUser();
     }
 }
@@ -80,10 +81,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['preferred_genre'])) {
             <div class="form-section">
                 <h2>Foretrukket sjanger</h2>
                 <p class="section-description">Velg din foretrukne sjanger slik at MovieMate kan gi bedre anbefalinger</p>
-                <?php if (!empty($error_message)): ?>
-                    <div><?= htmlspecialchars($error_message) ?></div>
+                <?php if (!empty($message)): ?>
+                    <div><?= htmlspecialchars($message) ?></div>
                 <?php endif; ?>
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <select name="preferred_genre" class="form-select">
                         <option value="">Velg en sjanger...</option>
                         <?php foreach ($genres as $genre): ?>

@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . "/call.php";
-
+require_once __DIR__ . '/../db/csrf.php';
 // continue session
 session_start();
 
@@ -12,6 +12,9 @@ if (!isset($_SESSION['messages'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
+    if (!validateCsrfToken($csrf_from_post ?: $csrf_from_header)) {
+        exit;
+    }
     $user_message = trim(strip_tags($_POST['message']));
 
     if ($user_message !== '') {

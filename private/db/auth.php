@@ -9,6 +9,12 @@ $response = ["success" => false, "message" => ""];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = isset($_POST['action']) ? trim($_POST['action']) : '';
+    $csrf = $_POST['csrf_token'] ?? '';
+
+    if (!validateCsrfToken($csrf)) {
+        echo json_encode(['success'=>false,'message'=>'Ugyldig CSRF-token.']);
+        exit;
+    }
     switch($action) {
         case 'login':
             $username = isset($_POST['username']) ? trim($_POST['username']) : '';

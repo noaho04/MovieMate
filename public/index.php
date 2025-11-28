@@ -4,6 +4,7 @@ require "../private/db/db.php";
 
 // Get current user if logged in
 $current_user = getCurrentUser();
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -25,6 +26,7 @@ $current_user = getCurrentUser();
             <div id="loginForm" class="auth-form active">
                 <h2>Logg inn</h2>
                 <form id="loginFormElement">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <input type="text" id="loginUsername" placeholder="Brukernavn" required>
                     <input type="password" id="loginPassword" placeholder="Passord" required>
                     <button type="submit" class="auth-btn">Logg inn</button>
@@ -36,6 +38,7 @@ $current_user = getCurrentUser();
             <div id="signupForm" class="auth-form hidden">
                 <h2>Registrer deg</h2>
                 <form id="signupFormElement">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <input type="text" id="signupUsername" placeholder="Brukernavn" required>
                     <input type="email" id="signupEmail" placeholder="E-post" required>
                     <input type="password" id="signupPassword" placeholder="Passord (minst 6 tegn)" required>
@@ -83,6 +86,7 @@ $current_user = getCurrentUser();
             ?>
         </div>
         <form method="post" id="chatForm" autocomplete="off">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
             <input type="text" placeholder="Spør i vei!" required autofocus>
             <button type="submit">Send</button>
         </form>
