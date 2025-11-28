@@ -22,6 +22,35 @@ if ($conn->connect_error) {
 }
 $conn->set_charset("utf8");
 
+// Get current user's info
+function getCurrentUser() {
+    if (!isLoggedIn()) {
+        return null;
+    }
+
+    global $conn;
+    $stmt = $conn->prepare("SELECT id, username, email, preferred_genre, is_admin, password FROM users WHERE id = ?");
+    $stmt->bind_param("i", $_SESSION['user_id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+
+    return $user;
+}
+
+function getAllUsers() {
+    global $conn;
+    $users_result = $conn->query("SELECT id, username, email, preferred_genre, is_admin FROM users ORDER BY username ASC");
+    $users = [];
+    if ($users_result) {
+        while ($row = $users_result->fetch_assoc()) {
+            $users[] = $row;
+        }
+    }
+    return $users;
+}
+
 function getGenres() {
     global $conn;
     $stmt = $conn->prepare("SELECT genre_name FROM genres");
@@ -52,14 +81,20 @@ function updateGenre($user_id, $preferred_genre) {
 }
 
 function isTaken($needle, $haystack) {
+    $valid_columns = ['email', 'username']; // Example of valid columns
+    if (!in_array($haystack, $valid_columns)) {
+        return False;
+    }
+
     global $conn;
-    $stmt = $conn->prepare("SELECT id FROM users WHERE $haystack = $needle");
-    $stmt->bind_param("ss", $haystack, $needle);
+    $query = "SELECT id FROM users WHERE $haystack = ?";
+    $stmt = $conn->prepare("SELECT id FROM users WHERE $haystack = ?");
+    $stmt->bind_param("s", $needle);
     $stmt->execute();
     $result = $stmt->get_result();
     $stmt->close();
 
-    if ($result->num_rows !== 0) {
+    if ($result->num_rows > 0) {
         return True;
     }
     
@@ -274,23 +309,6 @@ function isAdmin() {
     return isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
 }
 
-// Get current user's info
-function getCurrentUser() {
-    if (!isLoggedIn()) {
-        return null;
-    }
-
-    global $conn;
-    $stmt = $conn->prepare("SELECT id, username, email, preferred_genre, is_admin FROM users WHERE id = ?");
-    $stmt->bind_param("i", $_SESSION['user_id']);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
-    $stmt->close();
-
-    return $user;
-}
-
 // Logout user
 function logoutUser() {
     session_destroy();
@@ -320,15 +338,13 @@ function updateUsername($new_username) {
     $stmt = $conn->prepare("UPDATE users SET username = ? WHERE id = ?");
     $stmt->bind_param("si", $new_username, $_SESSION['user_id']);
 
-    if (!$stmt->execute()) {
+    if ($stmt->execute()) {
+        $message['type'] = "success";
+        $message['text'] = "Brukernavn oppdatert!";
+    } else {
         $message['type'] = "error";
-        $message['text'] = "Feil ved oppdatering av brukernavn";
-        $stmt->close();
-        return $message;
-    } 
-
-    $message['type'] = "success";
-    $message['text'] = "Brukernavn oppdatert!";
+        $message['text'] = "Feil ved oppdatering av brukernavn.";
+    }
 
     $stmt->close();
     return $message;
@@ -355,16 +371,14 @@ function updateEmail($new_email) {
     $stmt = $conn->prepare("UPDATE users SET email = ? WHERE id = ?");
     $stmt->bind_param("si", $new_email, $_SESSION['user_id']);
 
-    if(!$stmt->execute()) {
+    if ($stmt->execute()) {
+        $message['type'] = "success";
+        $message['text'] = "E-postadresse oppdatert!";
+    } else {
         $message['type'] = "error";
-        $message['text'] = "Feil ved oppdatering av e-postadresse.";
-        $stmt->close();
-        return $message;
+        $message['text'] = "Feil ved oppdatering av e-post.";
     }
 
-    $message['type'] = "success";
-    $message['text'] = "E-postadresse oppdatert!";
-    
     $stmt->close();
     return $message;
 }
@@ -403,15 +417,33 @@ function updatePassword($new_password) {
     $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
     $stmt->bind_param("si", $hashed_password, $_SESSION['user_id']);
 
-    if (!$stmt->execute()) {
+    if ($stmt->execute()) {
+        $message['type'] = "success";
+        $message['text'] = "Passord oppdatert!";
+    } else {
         $message['type'] = "error";
         $message['text'] = "Feil ved oppdatering av passord";
-        $stmt->close();
-        return $message;
     }
 
-    $message['type'] = "success";
-    $message['text'] = "Passord oppdatert!";
     $stmt->close();
+    return $message;
+}
+
+function deleteUser($user_id) {
+    global $conn;
+    // Delete user using prepared statement
+    $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
+    $stmt->bind_param("i", $user_id_to_delete);
+
+    if ($stmt->execute()) {
+        $message['type'] = "success";
+        $message['text'] = "Bruker slettet!";
+    } else {
+        $message['type'] = "error";
+        $message['text'] = "Feil ved sletting av bruker.";
+    }
+
+    $stmt->close();
+    return $message;
 }
 ?>
