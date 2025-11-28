@@ -8,123 +8,69 @@ if (!isLoggedIn()) {
 }
 
 $current_user = getCurrentUser();
-$message = '';
-$message_type = '';
 
 // Handle settings updates
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = isset($_POST['action']) ? trim($_POST['action']) : '';
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $message['type'] = 'error';
+        $message['text'] = 'Ugyldig CSRF-token. Vennligst prøv igjen.';
+    } else {
+        $action = isset($_POST['action']) ? trim($_POST['action']) : '';
 
-    if ($action === 'update_username') {
-        $new_username = isset($_POST['new_username']) ? trim($_POST['new_username']) : '';
-
-        if (empty($new_username)) {
-            $message = "Brukernavn kan ikke være tomt";
-            $message_type = "error";
-        } else {
-            // Check if username is already taken using prepared statement
-            $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
-            $stmt->bind_param("si", $new_username, $_SESSION['user_id']);
-            $stmt->execute();
-            $result = $stmt->get_result();
-
-            if ($result->num_rows > 0) {
-                $message = "Brukernavn er allerede tatt";
-                $message_type = "error";
+        if ($action === 'update_username') {
+            $new_username = isset($_POST['new_username']) ? trim($_POST['new_username']) : '';
+            if (empty($new_username)) {
+                $message['type'] = "error";
+                $message['text'] = "Brukernavn kan ikke være tomt.";
+            } elseif (!validateUsername($new_username)) {
+                $message['type'] = "error";
+                $message['text'] = "Brukernavn er ikke gyldig.";
+            } elseif (isTaken($new_username, "username")) {
+                $message['type'] = "error";
+                $message['text'] = "Brukernavn er allerede tatt";
             } else {
-                // Update username
-                $stmt = $conn->prepare("UPDATE users SET username = ? WHERE id = ?");
-                $stmt->bind_param("si", $new_username, $_SESSION['user_id']);
-
-                if ($stmt->execute()) {
-                    $_SESSION['username'] = $new_username;
-                    $message = "Brukernavn oppdatert!";
-                    $message_type = "success";
-                    $current_user = getCurrentUser();
-                } else {
-                    $message = "Feil ved oppdatering av brukernavn";
-                    $message_type = "error";
-                }
+                $message = updateUsername($new_username, $current_user['id']);
+                $current_user = getCurrentUser();
             }
-            $stmt->close();
-        }
 
-    } else if ($action === 'update_email') {
-        $new_email = isset($_POST['new_email']) ? trim($_POST['new_email']) : '';
-
-        if (empty($new_email)) {
-            $message = "E-post kan ikke være tom";
-            $message_type = "error";
-        } else {
-            // Check if email is already taken using prepared statement
-            $stmt = $conn->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
-            $stmt->bind_param("si", $new_email, $_SESSION['user_id']);
-            $stmt->execute();
-            $result = $stmt->get_result();
-
-            if ($result->num_rows > 0) {
-                $message = "E-postadressen er allerede registrert";
-                $message_type = "error";
+        } else if ($action === 'update_email') {
+            $new_email = isset($_POST['new_email']) ? trim($_POST['new_email']) : '';
+            if (empty($new_email)) {
+                $message['type'] = "error";
+                $message['text'] = "E-post kan ikke være tom.";
+            } elseif (!validateEmail($new_email)) {
+                $message['type'] = "error";
+                $message['text'] = "E-post ikke gyldig.";
+            } elseif (isTaken($new_email, "email")) {
+                $message['type'] = "error";
+                $message['text'] = "E-post allerede i bruk.";
             } else {
-                // Update email
-                $stmt = $conn->prepare("UPDATE users SET email = ? WHERE id = ?");
-                $stmt->bind_param("si", $new_email, $_SESSION['user_id']);
-
-                if ($stmt->execute()) {
-                    $message = "E-postadresse oppdatert!";
-                    $message_type = "success";
-                    $current_user = getCurrentUser();
-                } else {
-                    $message = "Feil ved oppdatering av e-postadresse";
-                    $message_type = "error";
-                }
+                $message = updateEmail($new_email, $current_user['id']);
+                $current_user = getCurrentUser();
             }
-            $stmt->close();
-        }
 
-    } else if ($action === 'update_password') {
-        $current_password = isset($_POST['current_password']) ? trim($_POST['current_password']) : '';
-        $new_password = isset($_POST['new_password']) ? trim($_POST['new_password']) : '';
-        $confirm_password = isset($_POST['confirm_password']) ? trim($_POST['confirm_password']) : '';
-
-        if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
-            $message = "Alle passordfelter må fylles inn";
-            $message_type = "error";
-        } else if ($new_password !== $confirm_password) {
-            $message = "Nye passord matcher ikke";
-            $message_type = "error";
-        } else if (strlen($new_password) < 6) {
-            $message = "Nytt passord må være minst 6 tegn";
-            $message_type = "error";
-        } else {
-            // Verify current password
-            $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
-            $stmt->bind_param("i", $_SESSION['user_id']);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $user = $result->fetch_assoc();
-            $stmt->close();
-
-            if (!verifyPassword($current_password, $user['password'])) {
-                $message = "Gjeldende passord er feil";
-                $message_type = "error";
+        } else if ($action === 'update_password') {
+            $current_password = isset($_POST['current_password']) ? trim($_POST['current_password']) : '';
+            $new_password = isset($_POST['new_password']) ? trim($_POST['new_password']) : '';
+            $confirm_password = isset($_POST['confirm_password']) ? trim($_POST['confirm_password']) : '';
+            if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
+                $message['type'] = "error";
+                $message['text'] = "Alle felt må fylles inn.";
+            } elseif (!verifyPassword($current_password, $current_user['password'])) {
+                $message['type'] = "error";
+                $message['text'] = "Gjeldende passord er feil.";
+            } elseif (!validatePassword($new_password)) {
+                $message['type'] = "error";
+                $message['text'] = "Passord må inneholde minst 10 tegn og ett spesialtegn, tall og stor bokstav.";
+            } elseif ($new_password !== $confirm_password) {
+                $message['type'] = "error";
+                $message['text'] = "Nye passord matcher ikke.";
             } else {
-                // Update password
-                $hashed_password = hashPassword($new_password);
-                $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
-                $stmt->bind_param("si", $hashed_password, $_SESSION['user_id']);
-
-                if ($stmt->execute()) {
-                    $message = "Passord oppdatert!";
-                    $message_type = "success";
-                } else {
-                    $message = "Feil ved oppdatering av passord";
-                    $message_type = "error";
-                }
-                $stmt->close();
+                $message = updatePassword($new_password, $current_user['id']);
+                $current_user = getCurrentUser();
             }
         }
-    }
+    }   
 }
 ?>
 <!DOCTYPE html>
@@ -150,9 +96,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="page-container">
         <div class="page-content">
 
-            <?php if ($message): ?>
-            <div class="message message-<?php echo $message_type; ?>">
-                <?php echo htmlspecialchars($message); ?>
+            <?php if (isset($message) && !empty($message)): ?>
+            <div class="message message-<?php echo $message['type']; ?>">
+                <?php echo htmlspecialchars($message['text']); ?>
             </div>
             <?php endif; ?>
 
@@ -160,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-section">
                 <h2>Endre brukernavn</h2>
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <input type="hidden" name="action" value="update_username">
                     <label for="new_username">Nytt brukernavn</label>
                     <input type="text" id="new_username" name="new_username" value="<?php echo htmlspecialchars($current_user['username']); ?>" required>
@@ -171,9 +118,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-section">
                 <h2>Endre e-postadresse</h2>
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <input type="hidden" name="action" value="update_email">
                     <label for="new_email">Ny e-postadresse</label>
-                    <input type="email" id="new_email" name="new_email" value="<?php echo htmlspecialchars($current_user['email']); ?>" required>
+                    <input type="text" id="new_email" name="new_email" value="<?php echo htmlspecialchars($current_user['email']); ?>" required>
                     <button type="submit" class="auth-btn">Lagre e-postadresse</button>
                 </form>
             </div>
@@ -182,12 +130,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-section">
                 <h2>Endre passord</h2>
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <input type="hidden" name="action" value="update_password">
                     <label for="current_password">Gjeldende passord</label>
                     <input type="password" id="current_password" name="current_password" required>
 
                     <label for="new_password">Nytt passord</label>
-                    <input type="password" id="new_password" name="new_password" placeholder="Minst 6 tegn" required>
+                    <input type="password" id="new_password" name="new_password" placeholder="Minst 10 tegn, inkl. tall, stor bokstav og spesialtegn" required>
 
                     <label for="confirm_password">Bekreft passord</label>
                     <input type="password" id="confirm_password" name="confirm_password" required>

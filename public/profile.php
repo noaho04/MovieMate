@@ -7,44 +7,34 @@ if (!isLoggedIn()) {
     exit;
 }
 
+ensureCsrfToken();
+
 $current_user = getCurrentUser();
+$genres = getGenres();
 
 // Handle genre preference update
-$message = '';
-$message_type = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['preferred_genre'])) {
-    $preferred_genre = isset($_POST['preferred_genre']) ? trim($_POST['preferred_genre']) : '';
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    $preferred_genre = $_POST['preferred_genre'] ?? '';
 
-    // Update genre preference using prepared statement
-    $stmt = $conn->prepare("UPDATE users SET preferred_genre = ? WHERE id = ?");
-    $stmt->bind_param("si", $preferred_genre, $_SESSION['user_id']);
-
-    if ($stmt->execute()) {
-        $message = "Sjanger lagret!";
-        $message_type = "success";
-        // Refresh user data
-        $current_user = getCurrentUser();
-    } else {
-        $message = "Feil ved lagring av sjanger";
-        $message_type = "error";
+    // Validate CSRF
+    if (!validateCsrfToken($csrf_token)) {
+        $message = "Ugyldig CSRF token.";
     }
-    $stmt->close();
+    // Validate genre
+    elseif (!($preferred_genre === '' || in_array($preferred_genre, $genres, true))) {
+        $message = "Ugyldig sjanger valgt.";
+    }
+    // Try to update genre
+    elseif (!updateGenre($_SESSION['user_id'], $preferred_genre)) {
+        $message = "Kunne ikke lagre sjanger. Prøv igjen.";
+    }
+    // Update values
+    else {
+        $message = "Sjanger lagret!";
+        $current_user = getCurrentUser();
+    }
 }
-
-// List of available genres, update later to get from db
-$genres = [
-    "Action",
-    "Komedie",
-    "Drama",
-    "Skrekk",
-    "Romantisk",
-    "Sci-fi",
-    "Thriller",
-    "Animasjon",
-    "Eventyr",
-    "Krim"
-];
 ?>
 <!DOCTYPE html>
 <html>
@@ -91,14 +81,11 @@ $genres = [
             <div class="form-section">
                 <h2>Foretrukket sjanger</h2>
                 <p class="section-description">Velg din foretrukne sjanger slik at MovieMate kan gi bedre anbefalinger</p>
-
-                <?php if ($message): ?>
-                <div class="message message-<?php echo $message_type; ?>">
-                    <?php echo htmlspecialchars($message); ?>
-                </div>
+                <?php if (!empty($message)): ?>
+                    <div><?= htmlspecialchars($message) ?></div>
                 <?php endif; ?>
-
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <select name="preferred_genre" class="form-select">
                         <option value="">Velg en sjanger...</option>
                         <?php foreach ($genres as $genre): ?>

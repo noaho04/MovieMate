@@ -1,5 +1,6 @@
 <?php
 require "../private/db/db.php";
+require "../private/db/csrf.php";
 
 // Check if user is logged in and is admin
 if (!isLoggedIn() || !isAdmin()) {
@@ -7,41 +8,27 @@ if (!isLoggedIn() || !isAdmin()) {
     exit;
 }
 
-$message = '';
-$message_type = '';
+// Get all users
+$users = getAllUsers();
 
 // Handle user deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_user') {
-    $user_id_to_delete = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $message['type'] = "error";
+        $message['text'] = "Ugyldig CSRF-token. Vennligst prøv igjen.";
+    } else {
+        $user_id_to_delete = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
 
-    // Prevent admin from deleting themselves
-    if ($user_id_to_delete === $_SESSION['user_id']) {
-        $message = "Du kan ikke slette din egen bruker";
-        $message_type = "error";
-    } else if ($user_id_to_delete > 0) {
-        // Delete user using prepared statement
-        $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
-        $stmt->bind_param("i", $user_id_to_delete);
-
-        if ($stmt->execute()) {
-            $message = "Bruker slettet!";
-            $message_type = "success";
+        // Prevent admin from deleting themselves
+        if ($user_id_to_delete === $_SESSION['user_id']) {
+            $message['type'] = "error";
+            $message['text'] = "Du kan ikke slette din egen bruker!";
         } else {
-            $message = "Feil ved sletting av bruker";
-            $message_type = "error";
+            deleteUser($user_id_to_delete);
         }
-        $stmt->close();
     }
 }
 
-// Get all users
-$users_result = $conn->query("SELECT id, username, email, preferred_genre, is_admin FROM users ORDER BY username ASC");
-$users = [];
-if ($users_result) {
-    while ($row = $users_result->fetch_assoc()) {
-        $users[] = $row;
-    }
-}
 ?>
 <!DOCTYPE html>
 <html>
@@ -67,9 +54,9 @@ if ($users_result) {
     <div class="page-container">
         <div class="page-content">
 
-            <?php if ($message): ?>
-            <div class="message message-<?php echo $message_type; ?>">
-                <?php echo htmlspecialchars($message); ?>
+            <?php if (isset($message) && !empty($message)): ?>
+            <div class="message message-<?php echo $message['type']; ?>">
+                <?php echo htmlspecialchars($message['text']); ?>
             </div>
             <?php endif; ?>
 
@@ -105,8 +92,9 @@ if ($users_result) {
                                 <td>
                                     <?php if ($user['id'] !== $_SESSION['user_id']): ?>
                                     <form method="post" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                                         <input type="hidden" name="action" value="delete_user">
-                                        <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                        <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user['id']); ?>">
                                         <button type="submit" class="delete-btn" onclick="return confirm('Er du sikker på at du vil slette denne brukeren?');">Slett</button>
                                     </form>
                                     <?php else: ?>

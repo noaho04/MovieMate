@@ -37,20 +37,36 @@ function clearAuthError() {
     document.getElementById('authError').textContent = '';
 }
 
+function getCsrfToken(formSelector) {
+    if (formSelector) {
+        const el = document.querySelector(formSelector + ' input[name="csrf_token"]');
+        if (el) return el.value;
+    }
+    const el = document.querySelector('input[name="csrf_token"]');
+    return el ? el.value : '';
+}
+
 //Handle login form submission
 document.getElementById('loginFormElement')?.addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const username = document.getElementById('loginUsername').value;
     const password = document.getElementById('loginPassword').value;
+    const csrf = getCsrfToken('#loginFormElement');
 
     try {
+        const body = 'action=login'
+            + '&username=' + encodeURIComponent(username)
+            + '&password=' + encodeURIComponent(password)
+            + '&csrf_token=' + encodeURIComponent(csrf);
+
         const response = await fetch('/auth.php', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': csrf || ''
             },
-            body: 'action=login&username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password)
+            body: body
         });
 
         const data = await response.json();
@@ -59,7 +75,7 @@ document.getElementById('loginFormElement')?.addEventListener('submit', async fu
             // Redirect to index.php to refresh and show logged in state
             window.location.href = 'index.php';
         } else {
-            showAuthError(data.message);
+            showAuthError(data.message || 'Innlogging feilet.');
         }
     } catch (error) {
         showAuthError('En feil oppstod. Prøv igjen.');
@@ -74,14 +90,22 @@ document.getElementById('signupFormElement')?.addEventListener('submit', async f
     const username = document.getElementById('signupUsername').value;
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
+    const csrf = getCsrfToken('#signupFormElement');
 
     try {
+        const body = 'action=signup'
+            + '&username=' + encodeURIComponent(username)
+            + '&email=' + encodeURIComponent(email)
+            + '&password=' + encodeURIComponent(password)
+            + '&csrf_token=' + encodeURIComponent(csrf);
+
         const response = await fetch('/auth.php', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': csrf || ''
             },
-            body: 'action=signup&username=' + encodeURIComponent(username) + '&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password)
+            body: body
         });
 
         const data = await response.json();
@@ -90,7 +114,7 @@ document.getElementById('signupFormElement')?.addEventListener('submit', async f
             alert('Bruker registrert! Logg inn nå.');
             toggleAuthForm();
         } else {
-            showAuthError(data.message);
+            showAuthError(data.message || 'Registrering feilet.');
         }
     } catch (error) {
         showAuthError('En feil oppstod. Prøv igjen.');
@@ -112,8 +136,17 @@ function logout() {
         input.type = 'hidden';
         input.name = 'action';
         input.value = 'logout';
-
         form.appendChild(input);
+
+        const csrf = getCsrfToken();
+        if (csrf) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = csrf;
+            form.appendChild(csrfInput);
+        }
+
         document.body.appendChild(form);
         form.submit();
     }

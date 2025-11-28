@@ -1,7 +1,11 @@
 <?php
+require_once __DIR__ . '/csrf.php';
+require_once __DIR__ . '/validation.php';
+
 // Database configuration and helper functions for authentication
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+    ensureCsrfToken();
 }
 
 // Database connection details
@@ -19,14 +23,83 @@ if ($conn->connect_error) {
 }
 $conn->set_charset("utf8");
 
-// Hash password
-function hashPassword($password) {
-    return password_hash($password, PASSWORD_BCRYPT);
+// Get current user's info
+function getCurrentUser() {
+    if (!isLoggedIn()) {
+        return null;
+    }
+
+    global $conn;
+    $stmt = $conn->prepare("SELECT id, username, email, preferred_genre, is_admin, password FROM users WHERE id = ?");
+    $stmt->bind_param("i", $_SESSION['user_id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+
+    return $user;
 }
 
-// Verify password against hashed password
-function verifyPassword($password, $hash) {
-    return password_verify($password, $hash);
+function getAllUsers() {
+    global $conn;
+    $users_result = $conn->query("SELECT id, username, email, preferred_genre, is_admin FROM users ORDER BY username ASC");
+    $users = [];
+    if ($users_result) {
+        while ($row = $users_result->fetch_assoc()) {
+            $users[] = $row;
+        }
+    }
+    return $users;
+}
+
+function getGenres() {
+    global $conn;
+    $stmt = $conn->prepare("SELECT genre_name FROM genres");
+
+    if (!$stmt->execute()) {
+        $stmt->close();
+        return ["Feil under henting av sjangere"];
+    }
+    
+    $result = $stmt->get_result();
+    $stmt->close();
+    // Return list of genres
+    return array_column($result->fetch_all(MYSQLI_ASSOC), 'genre_name');
+}
+
+function updateGenre($user_id, $preferred_genre) {
+    global $conn;
+    // Update genre preference using prepared statement
+    $stmt = $conn->prepare("UPDATE users SET preferred_genre = ? WHERE id = ?");
+    $stmt->bind_param("si", $preferred_genre, $user_id);
+
+    if (!$stmt->execute()) {
+        $stmt->close();
+        return False;
+    }
+    $stmt->close();
+    return True;
+}
+
+function isTaken($needle, $haystack) {
+    $valid_columns = ['email', 'username']; // Example of valid columns
+    if (!in_array($haystack, $valid_columns)) {
+        return False;
+    }
+
+    global $conn;
+    $query = "SELECT id FROM users WHERE $haystack = ?";
+    $stmt = $conn->prepare("SELECT id FROM users WHERE $haystack = ?");
+    $stmt->bind_param("s", $needle);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $stmt->close();
+
+    if ($result->num_rows > 0) {
+        return True;
+    }
+    
+    return False;
 }
 
 // Register new user, output array with state and message
@@ -39,45 +112,29 @@ function registerUser($username, $email, $password) {
         $errors[] = "Alle felt må fylles inn";
     }
     
-    if (!preg_match('/^[A-Za-z0-9]+$/', $username)) {
-        $errors[] = "Brukernavn kan kun bestå av bokstaver og tall";
+    if (!validateUsername($username)) {
+        $errors[] = "Brukernavn kan kun bestå av bokstaver og tall (max. 50 tegn).";
     }
     
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    if (!validateEmail($email)) {
         $errors[] = "E-post ikke gyldig.";
     }
 
-    if (strlen($password) < 6) {
-        $errors[] = "Passordet må være minst 6 tegn";
+    if (!validatePassword($password)) {
+        $errors[] = "Passord må inneholde minst 10 tegn og ett spesialtegn, tall og stor bokstav.";
     }
 
     if (!(empty($errors))) {
-        return ["success" => false, $errors];
+        return ["success" => false, "message" => implode("\n",$errors)];
     }
-    
-    // Check if username already exists using prepared statement
-    $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        $stmt->close();
+    if (isTaken($username, "username")) {
         return ["success" => false, "message" => "Brukernavn er allerede tatt"];
     }
-    $stmt->close();
 
-    // Check if email already exists using prepared statement
-    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $stmt->close();
+    if (isTaken($email, "email")) {
         return ["success" => false, "message" => "E-postadressen er allerede registrert"];
     }
-    $stmt->close();
 
     // Hash password
     $hashed_password = hashPassword($password);
@@ -253,28 +310,85 @@ function isAdmin() {
     return isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
 }
 
-// Get current user's info
-function getCurrentUser() {
-    if (!isLoggedIn()) {
-        return null;
-    }
-
-    global $conn;
-    $stmt = $conn->prepare("SELECT id, username, email, preferred_genre, is_admin FROM users WHERE id = ?");
-    $stmt->bind_param("i", $_SESSION['user_id']);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
-    $stmt->close();
-
-    return $user;
-}
-
 // Logout user
 function logoutUser() {
     session_destroy();
     // Redirect to the public index using an absolute path so the URL resolves
     header("Location: /index.php");
     exit;
+}
+
+function updateUsername($new_username, $user_id) {
+    global $conn;
+    // Update username
+    $stmt = $conn->prepare("UPDATE users SET username = ? WHERE id = ?");
+    $stmt->bind_param("si", $new_username, $user_id);
+
+    if ($stmt->execute()) {
+        $message['type'] = "success";
+        $message['text'] = "Brukernavn oppdatert!";
+    } else {
+        $message['type'] = "error";
+        $message['text'] = "Feil ved oppdatering av brukernavn.";
+    }
+
+    $stmt->close();
+    return $message;
+}
+
+function updateEmail($new_email, $user_id) {
+    global $conn;
+    // Update email
+    $stmt = $conn->prepare("UPDATE users SET email = ? WHERE id = ?");
+    $stmt->bind_param("si", $new_email, $user_id);
+
+    if ($stmt->execute()) {
+        $message['type'] = "success";
+        $message['text'] = "E-postadresse oppdatert!";
+    } else {
+        $message['type'] = "error";
+        $message['text'] = "Feil ved oppdatering av e-post.";
+    }
+
+    $stmt->close();
+    return $message;
+}
+
+function updatePassword($new_password, $user_id) {
+    global $conn;
+
+    // Update password
+    $hashed_password = hashPassword($new_password);
+    $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+    $stmt->bind_param("si", $hashed_password, $user_id);
+
+    if ($stmt->execute()) {
+        $message['type'] = "success";
+        $message['text'] = "Passord oppdatert!";
+    } else {
+        $message['type'] = "error";
+        $message['text'] = "Feil ved oppdatering av passord";
+    }
+
+    $stmt->close();
+    return $message;
+}
+
+function deleteUser($user_id) {
+    global $conn;
+    // Delete user using prepared statement
+    $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
+    $stmt->bind_param("i", $user_id_to_delete);
+
+    if ($stmt->execute()) {
+        $message['type'] = "success";
+        $message['text'] = "Bruker slettet!";
+    } else {
+        $message['type'] = "error";
+        $message['text'] = "Feil ved sletting av bruker.";
+    }
+
+    $stmt->close();
+    return $message;
 }
 ?>
