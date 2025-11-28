@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'update_username') {
             $new_username = isset($_POST['new_username']) ? trim($_POST['new_username']) : '';
 
-            $message = updateUsername($new_username, $user['id']);
+            $message = updateUsername($new_username, $current_user['id']);
             if ($message['type'] !== "error") {
                 $current_user = getCurrentUser();
             }
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else if ($action === 'update_email') {
             $new_email = isset($_POST['new_email']) ? trim($_POST['new_email']) : '';
 
-            $message = updateEmail($new_email, $user['id']);
+            $message = updateEmail($new_email, $current_user['id']);
             if ($message['type'] !== "error") {
                 $current_user = getCurrentUser();
             }
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message['type'] = "error";
                 $message['text'] = "Gjeldende passord er feil.";
             } else {
-                $message = updatePassword($new_password, $user['id']);
+                $message = updatePassword($new_password, $current_user['id']);
             }
         }
     }   
