@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // define constants for message manipulation
 const form = document.getElementById("chatForm");
-const input = form.querySelector('input[type="text"]');
+const input = form.querySelector('input[name="message"]');
 const chatBox = document.querySelector(".chat-messages");
 
 form.addEventListener("submit", () => {
@@ -26,13 +26,6 @@ form.addEventListener("submit", () => {
 
         // ensure chatbox is at bottom
         chatBox.scrollTop = chatBox.scrollHeight;
-        
-        // create hidden input to pass initial message
-        const hidden = document.createElement("input");
-        hidden.type = "hidden";
-        hidden.name = "message";
-        hidden.value = userText;
-        form.appendChild(hidden);
 
         // clear and lock visible input
         input.value = "";

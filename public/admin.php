@@ -1,6 +1,5 @@
 <?php
 require "../private/db/db.php";
-require "../private/db/csrf.php";
 
 // Check if user is logged in and is admin
 if (!isLoggedIn() || !isAdmin()) {
@@ -13,19 +12,14 @@ $users = getAllUsers();
 
 // Handle user deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_user') {
-    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
-        $message['type'] = "error";
-        $message['text'] = "Ugyldig CSRF-token. Vennligst prøv igjen.";
-    } else {
-        $user_id_to_delete = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+    $user_id_to_delete = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
 
-        // Prevent admin from deleting themselves
-        if ($user_id_to_delete === $_SESSION['user_id']) {
-            $message['type'] = "error";
-            $message['text'] = "Du kan ikke slette din egen bruker!";
-        } else {
-            deleteUser($user_id_to_delete);
-        }
+    // Prevent admin from deleting themselves
+    if ($user_id_to_delete === $_SESSION['user_id']) {
+        $message['type'] = "error";
+        $message['text'] = "Du kan ikke slette din egen bruker!";
+    } else {
+        deleteUser($user_id_to_delete);
     }
 }
 
@@ -92,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 <td>
                                     <?php if ($user['id'] !== $_SESSION['user_id']): ?>
                                     <form method="post" style="display: inline;">
-                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                                        
                                         <input type="hidden" name="action" value="delete_user">
                                         <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user['id']); ?>">
                                         <button type="submit" class="delete-btn" onclick="return confirm('Er du sikker på at du vil slette denne brukeren?');">Slett</button>

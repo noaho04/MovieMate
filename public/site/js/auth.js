@@ -52,19 +52,16 @@ document.getElementById('loginFormElement')?.addEventListener('submit', async fu
 
     const username = document.getElementById('loginUsername').value;
     const password = document.getElementById('loginPassword').value;
-    const csrf = getCsrfToken('#loginFormElement');
 
     try {
         const body = 'action=login'
             + '&username=' + encodeURIComponent(username)
             + '&password=' + encodeURIComponent(password)
-            + '&csrf_token=' + encodeURIComponent(csrf);
 
         const response = await fetch('/auth.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRF-Token': csrf || ''
             },
             body: body
         });
@@ -90,20 +87,18 @@ document.getElementById('signupFormElement')?.addEventListener('submit', async f
     const username = document.getElementById('signupUsername').value;
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
-    const csrf = getCsrfToken('#signupFormElement');
+
 
     try {
         const body = 'action=signup'
             + '&username=' + encodeURIComponent(username)
             + '&email=' + encodeURIComponent(email)
             + '&password=' + encodeURIComponent(password)
-            + '&csrf_token=' + encodeURIComponent(csrf);
 
         const response = await fetch('/auth.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRF-Token': csrf || ''
             },
             body: body
         });
@@ -137,15 +132,6 @@ function logout() {
         input.name = 'action';
         input.value = 'logout';
         form.appendChild(input);
-
-        const csrf = getCsrfToken();
-        if (csrf) {
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = 'csrf_token';
-            csrfInput.value = csrf;
-            form.appendChild(csrfInput);
-        }
 
         document.body.appendChild(form);
         form.submit();

@@ -1,9 +1,52 @@
 <?php
-require "../private/api/process.php";
-require "../private/db/db.php";
+
+require_once "../private/db/db.php";
+require_once "../private/api/call.php";
 
 // Get current user if logged in
 $current_user = getCurrentUser();
+
+if (!isset($_SESSION['messages'])) {
+    $_SESSION['messages'] = [[
+        "role" => "model",
+        "content" => "Hei, jeg er MovieMate. Spør meg om hva som helst film-relatert!"
+    ]];
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
+    // Sanitize raw
+    $raw = filter_input(INPUT_POST, 'message', FILTER_UNSAFE_RAW) ?? '';
+    // Remove HTML tags, trim whitespace
+    $user_message = trim(strip_tags($raw));
+    if (mb_strlen($user_message, 'UTF-8') > 100) {
+        exit;
+    }
+
+    if ($user_message !== '') {
+        // Save user message
+        $_SESSION['messages'][] = ["role" => "user", "content" => $user_message];
+
+        // Build chatlog (skip greeting)
+        $chatlog = [];
+        foreach (array_slice($_SESSION['messages'], 1) as $m) {
+            $chatlog[] = [
+                "role"  => $m["role"],
+                "parts" => [["text" => $m["content"]]]
+            ];
+        }
+
+        // Get model reply + save
+        if(isset($current_user['preferred_genre'])) {
+            $reply = callAPI($chatlog, $current_user['preferred_genre']);
+        } else {
+            $reply = callAPI($chatlog, '');
+        }
+        $_SESSION['messages'][] = ["role" => "model", "content" => $reply];
+    }
+
+    header('Location: ' . $_SERVER['REQUEST_URI']);
+    exit;
+}
 
 ?>
 <!DOCTYPE html>
@@ -26,9 +69,8 @@ $current_user = getCurrentUser();
             <div id="loginForm" class="auth-form active">
                 <h2>Logg inn</h2>
                 <form id="loginFormElement">
-                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-                    <input type="text" id="loginUsername" placeholder="Brukernavn" required>
-                    <input type="password" id="loginPassword" placeholder="Passord" required>
+                    <input type="text" id="loginUsername" placeholder="Brukernavn">
+                    <input type="password" id="loginPassword" placeholder="Passord">
                     <button type="submit" class="auth-btn">Logg inn</button>
                 </form>
                 <p class="auth-toggle">Ingen konto? <a href="#" onclick="toggleAuthForm()">Registrer deg</a></p>
@@ -38,10 +80,9 @@ $current_user = getCurrentUser();
             <div id="signupForm" class="auth-form hidden">
                 <h2>Registrer deg</h2>
                 <form id="signupFormElement">
-                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-                    <input type="text" id="signupUsername" placeholder="Brukernavn" required>
-                    <input type="email" id="signupEmail" placeholder="E-post" required>
-                    <input type="password" id="signupPassword" placeholder="Passord (minst 6 tegn)" required>
+                    <input type="text" id="signupUsername" placeholder="Brukernavn">
+                    <input type="email" id="signupEmail" placeholder="E-post">
+                    <input type="password" id="signupPassword" placeholder="Passord (minst 6 tegn)">
                     <button type="submit" class="auth-btn">Registrer</button>
                 </form>
                 <p class="auth-toggle">Har du konto? <a href="#" onclick="toggleAuthForm()">Logg inn</a></p>
@@ -85,10 +126,9 @@ $current_user = getCurrentUser();
             }
             ?>
         </div>
-        <form method="post" id="chatForm" autocomplete="off">
-            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-            <input type="text" placeholder="Spør i vei!" required autofocus>
-            <button type="submit">Send</button>
+        <form method="post" id="chatForm" autocomplete="off" action="">
+            <input type="text" name="message" placeholder="Spør i vei!" maxlength="100" required autofocus>
+            <button type="submit" id="chatSendBtn">Send</button>
         </form>
     </div>
 </body>

@@ -11,66 +11,61 @@ $current_user = getCurrentUser();
 
 // Handle settings updates
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
-        $message['type'] = 'error';
-        $message['text'] = 'Ugyldig CSRF-token. Vennligst prøv igjen.';
-    } else {
-        $action = isset($_POST['action']) ? trim($_POST['action']) : '';
+    $action = isset($_POST['action']) ? trim($_POST['action']) : '';
 
-        if ($action === 'update_username') {
-            $new_username = isset($_POST['new_username']) ? trim($_POST['new_username']) : '';
-            if (empty($new_username)) {
-                $message['type'] = "error";
-                $message['text'] = "Brukernavn kan ikke være tomt.";
-            } elseif (!validateUsername($new_username)) {
-                $message['type'] = "error";
-                $message['text'] = "Brukernavn er ikke gyldig.";
-            } elseif (isTaken($new_username, "username")) {
-                $message['type'] = "error";
-                $message['text'] = "Brukernavn er allerede tatt";
-            } else {
-                $message = updateUsername($new_username, $current_user['id']);
-                $current_user = getCurrentUser();
-            }
-
-        } else if ($action === 'update_email') {
-            $new_email = isset($_POST['new_email']) ? trim($_POST['new_email']) : '';
-            if (empty($new_email)) {
-                $message['type'] = "error";
-                $message['text'] = "E-post kan ikke være tom.";
-            } elseif (!validateEmail($new_email)) {
-                $message['type'] = "error";
-                $message['text'] = "E-post ikke gyldig.";
-            } elseif (isTaken($new_email, "email")) {
-                $message['type'] = "error";
-                $message['text'] = "E-post allerede i bruk.";
-            } else {
-                $message = updateEmail($new_email, $current_user['id']);
-                $current_user = getCurrentUser();
-            }
-
-        } else if ($action === 'update_password') {
-            $current_password = isset($_POST['current_password']) ? trim($_POST['current_password']) : '';
-            $new_password = isset($_POST['new_password']) ? trim($_POST['new_password']) : '';
-            $confirm_password = isset($_POST['confirm_password']) ? trim($_POST['confirm_password']) : '';
-            if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
-                $message['type'] = "error";
-                $message['text'] = "Alle felt må fylles inn.";
-            } elseif (!verifyPassword($current_password, $current_user['password'])) {
-                $message['type'] = "error";
-                $message['text'] = "Gjeldende passord er feil.";
-            } elseif (!validatePassword($new_password)) {
-                $message['type'] = "error";
-                $message['text'] = "Passord må inneholde minst 10 tegn og ett spesialtegn, tall og stor bokstav.";
-            } elseif ($new_password !== $confirm_password) {
-                $message['type'] = "error";
-                $message['text'] = "Nye passord matcher ikke.";
-            } else {
-                $message = updatePassword($new_password, $current_user['id']);
-                $current_user = getCurrentUser();
-            }
+    if ($action === 'update_username') {
+        $new_username = isset($_POST['new_username']) ? trim($_POST['new_username']) : '';
+        if (empty($new_username)) {
+            $message['type'] = "error";
+            $message['text'] = "Brukernavn kan ikke være tomt.";
+        } elseif (!validateUsername($new_username)) {
+            $message['type'] = "error";
+            $message['text'] = "Brukernavn er ikke gyldig.";
+        } elseif (isTaken($new_username, "username")) {
+            $message['type'] = "error";
+            $message['text'] = "Brukernavn er allerede tatt";
+        } else {
+            $message = updateUsername($new_username, $current_user['id']);
+            $current_user = getCurrentUser();
         }
-    }   
+
+    } else if ($action === 'update_email') {
+        $new_email = isset($_POST['new_email']) ? trim($_POST['new_email']) : '';
+        if (empty($new_email)) {
+            $message['type'] = "error";
+            $message['text'] = "E-post kan ikke være tom.";
+        } elseif (!validateEmail($new_email)) {
+            $message['type'] = "error";
+            $message['text'] = "E-post ikke gyldig.";
+        } elseif (isTaken($new_email, "email")) {
+            $message['type'] = "error";
+            $message['text'] = "E-post allerede i bruk.";
+        } else {
+            $message = updateEmail($new_email, $current_user['id']);
+            $current_user = getCurrentUser();
+        }
+
+    } else if ($action === 'update_password') {
+        $current_password = isset($_POST['current_password']) ? trim($_POST['current_password']) : '';
+        $new_password = isset($_POST['new_password']) ? trim($_POST['new_password']) : '';
+        $confirm_password = isset($_POST['confirm_password']) ? trim($_POST['confirm_password']) : '';
+        if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
+            $message['type'] = "error";
+            $message['text'] = "Alle felt må fylles inn.";
+        } elseif (!verifyPassword($current_password, $current_user['password'])) {
+            $message['type'] = "error";
+            $message['text'] = "Gjeldende passord er feil.";
+        } elseif (!validatePassword($new_password)) {
+            $message['type'] = "error";
+            $message['text'] = "Passord må inneholde minst 10 tegn og ett spesialtegn, tall og stor bokstav.";
+        } elseif ($new_password !== $confirm_password) {
+            $message['type'] = "error";
+            $message['text'] = "Nye passord matcher ikke.";
+        } else {
+            $message = updatePassword($new_password, $current_user['id']);
+            $current_user = getCurrentUser();
+        }
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -106,7 +101,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-section">
                 <h2>Endre brukernavn</h2>
                 <form method="post">
-                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <input type="hidden" name="action" value="update_username">
                     <label for="new_username">Nytt brukernavn</label>
                     <input type="text" id="new_username" name="new_username" value="<?php echo htmlspecialchars($current_user['username']); ?>" required>
@@ -118,7 +112,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-section">
                 <h2>Endre e-postadresse</h2>
                 <form method="post">
-                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <input type="hidden" name="action" value="update_email">
                     <label for="new_email">Ny e-postadresse</label>
                     <input type="text" id="new_email" name="new_email" value="<?php echo htmlspecialchars($current_user['email']); ?>" required>
@@ -130,7 +123,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-section">
                 <h2>Endre passord</h2>
                 <form method="post">
-                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <input type="hidden" name="action" value="update_password">
                     <label for="current_password">Gjeldende passord</label>
                     <input type="password" id="current_password" name="current_password" required>

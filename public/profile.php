@@ -7,22 +7,15 @@ if (!isLoggedIn()) {
     exit;
 }
 
-ensureCsrfToken();
-
 $current_user = getCurrentUser();
 $genres = getGenres();
 
 // Handle genre preference update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['preferred_genre'])) {
-    $csrf_token = $_POST['csrf_token'] ?? '';
     $preferred_genre = $_POST['preferred_genre'] ?? '';
 
-    // Validate CSRF
-    if (!validateCsrfToken($csrf_token)) {
-        $message = "Ugyldig CSRF token.";
-    }
     // Validate genre
-    elseif (!($preferred_genre === '' || in_array($preferred_genre, $genres, true))) {
+    if (!($preferred_genre === '' || in_array($preferred_genre, $genres, true))) {
         $message = "Ugyldig sjanger valgt.";
     }
     // Try to update genre
@@ -85,7 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['preferred_genre'])) {
                     <div><?= htmlspecialchars($message) ?></div>
                 <?php endif; ?>
                 <form method="post">
-                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <select name="preferred_genre" class="form-select">
                         <option value="">Velg en sjanger...</option>
                         <?php foreach ($genres as $genre): ?>

@@ -1,13 +1,16 @@
 <?php
-function callAPI($chatlog) {
+function callAPI($chatlog, $preferred_genre='') {
     include "API_KEY.php";
 
     $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
     // Define baseline system instruction for the chatbot
-    $system_instruction = ["parts" => [["text" => "Du er MovieMate, en hyggelig AI-chatbot som skal gi anbefalinger og informasjon om filmer. Hold svarene korte og ikke bruk formattering som fet-skrift og lister."]]];
-
-    // Pass the system instruction and chatlog to $data
+    $base = "Du er MovieMate, en hyggelig AI-chatbot som skal gi anbefalinger og informasjon om filmer. Hold svarene korte og ikke bruk formattering som fet-skrift og lister.";
+    $extra = " Brukeren sin favorittsjanger er $preferred_genre.";
+    $text = $base . $extra;
+    $system_instruction = ["parts" => [["text" => $text]]];
+    
+    // Pass the system instruction and chatlog to data
     $data = [
         "system_instruction" => $system_instruction,
         "contents" => $chatlog
@@ -21,7 +24,7 @@ function callAPI($chatlog) {
         "Content-Type: application/json"
     ]);
 
-    // Define it as a POST request, and pass $data as json
+    // Define as post, pass data as json
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 

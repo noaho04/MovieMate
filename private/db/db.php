@@ -1,11 +1,9 @@
 <?php
-require_once __DIR__ . '/csrf.php';
 require_once __DIR__ . '/validation.php';
 
 // Database configuration and helper functions for authentication
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
-    ensureCsrfToken();
 }
 
 // Database connection details
@@ -40,6 +38,7 @@ function getCurrentUser() {
     return $user;
 }
 
+// Get all users (for admin view)
 function getAllUsers() {
     global $conn;
     $users_result = $conn->query("SELECT id, username, email, preferred_genre, is_admin FROM users ORDER BY username ASC");
@@ -52,6 +51,7 @@ function getAllUsers() {
     return $users;
 }
 
+// Get all genres for list
 function getGenres() {
     global $conn;
     $stmt = $conn->prepare("SELECT genre_name FROM genres");
@@ -67,6 +67,7 @@ function getGenres() {
     return array_column($result->fetch_all(MYSQLI_ASSOC), 'genre_name');
 }
 
+// Update a given user's genre
 function updateGenre($user_id, $preferred_genre) {
     global $conn;
     // Update genre preference using prepared statement
@@ -81,6 +82,7 @@ function updateGenre($user_id, $preferred_genre) {
     return True;
 }
 
+// check if something istaken 
 function isTaken($needle, $haystack) {
     $valid_columns = ['email', 'username']; // Example of valid columns
     if (!in_array($haystack, $valid_columns)) {
@@ -109,7 +111,7 @@ function registerUser($username, $email, $password) {
 
     // Validate inputs
     if (empty($username) || empty($email) || empty($password)) {
-        $errors[] = "Alle felt må fylles inn";
+        $errors[] = "Alle felt må fylles inn.";
     }
     
     if (!validateUsername($username)) {
@@ -199,9 +201,6 @@ function checkLoginLock($username) {
 function recordFailedAttempt($username) {
     global $conn;
 
-    // Debug
-    error_log("Recording failed attempt for: " . $username);
-
     // Increment failed attempts
     $stmt = $conn->prepare("UPDATE users SET login_attempts = login_attempts + 1 WHERE username = ?");
     $stmt->bind_param("s", $username);
@@ -254,7 +253,10 @@ function loginUser($username, $password) {
 
     // Validate inputs
     if (empty($username) || empty($password)) {
-        return ["success" => false, "message" => "Brukernavn og passord er påkrevd"];
+        return ["success" => false, "message" => "Brukernavn og passord er påkrevd."];
+    }
+    if (!(validateUsername($username) && validatePassword($password))) {
+        return ["success" => false, "message" => "Brukernavn eller passord ugyldig."];
     }
 
     // Check if account is locked
@@ -271,7 +273,7 @@ function loginUser($username, $password) {
 
     if ($result->num_rows === 0) {
         $stmt->close();
-        return ["success" => false, "message" => "Brukernavn eller passord er feil"];
+        return ["success" => false, "message" => "Brukernavn eller passord er feil."];
     }
 
     $user = $result->fetch_assoc();
@@ -313,11 +315,13 @@ function isAdmin() {
 // Logout user
 function logoutUser() {
     session_destroy();
-    // Redirect to the public index using an absolute path so the URL resolves
+
+    // redirect
     header("Location: /index.php");
     exit;
 }
 
+// Update given user's username
 function updateUsername($new_username, $user_id) {
     global $conn;
     // Update username
@@ -336,6 +340,7 @@ function updateUsername($new_username, $user_id) {
     return $message;
 }
 
+// Update given user's email
 function updateEmail($new_email, $user_id) {
     global $conn;
     // Update email
@@ -354,6 +359,7 @@ function updateEmail($new_email, $user_id) {
     return $message;
 }
 
+// Update given user's password
 function updatePassword($new_password, $user_id) {
     global $conn;
 
@@ -374,11 +380,12 @@ function updatePassword($new_password, $user_id) {
     return $message;
 }
 
+// Delete given user
 function deleteUser($user_id) {
     global $conn;
     // Delete user using prepared statement
     $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
-    $stmt->bind_param("i", $user_id_to_delete);
+    $stmt->bind_param("i", $user_id);
 
     if ($stmt->execute()) {
         $message['type'] = "success";
