@@ -14,6 +14,15 @@ if (!isset($_SESSION['messages'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
+    // Token setup for prevention of double submission
+    $submit_token = filter_input(INPUT_POST, 'submit_token', FILTER_UNSAFE_RAW) ?? '';
+    // require non-empty token and exact match with session token
+    if ($submit_token === '' || !isset($_SESSION['submit_token']) || !hash_equals($_SESSION['submit_token'], $submit_token)) {
+        header('Location: ' . $_SERVER['REQUEST_URI']);
+        exit;
+    }
+    // consume token
+    $_SESSION['submit_token'] = '';
     // Sanitize raw
     $raw = filter_input(INPUT_POST, 'message', FILTER_UNSAFE_RAW) ?? '';
     // Remove HTML tags, trim whitespace
@@ -48,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
     exit;
 }
 
+$_SESSION['submit_token'] = bin2hex(random_bytes(16));
 ?>
 <!DOCTYPE html>
 <html>
@@ -127,6 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
             ?>
         </div>
         <form method="post" id="chatForm" autocomplete="off" action="">
+            <input type="hidden" name="submit_token" value="<?php echo htmlspecialchars($_SESSION['submit_token'] ?? ''); ?>">
             <input type="text" name="message" placeholder="Spør i vei!" maxlength="100" required autofocus>
             <button type="submit" id="chatSendBtn">Send</button>
         </form>
