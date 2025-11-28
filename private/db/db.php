@@ -1,4 +1,7 @@
 <?php
+require_once __DIR__ . '/csrf.php';
+require_once __DIR__ . '/validation.php';
+
 // Database configuration and helper functions for authentication
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -44,18 +47,23 @@ function updateGenre($user_id, $preferred_genre) {
         $stmt->close();
         return False;
     }
-    
+    $stmt->close();
     return True;
 }
 
-// Hash password
-function hashPassword($password) {
-    return password_hash($password, PASSWORD_BCRYPT);
-}
+function isTaken($needle, $haystack) {
+    global $conn;
+    $stmt = $conn->prepare("SELECT id FROM users WHERE $haystack = $needle");
+    $stmt->bind_param("ss", $haystack, $needle);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $stmt->close();
 
-// Verify password against hashed password
-function verifyPassword($password, $hash) {
-    return password_verify($password, $hash);
+    if ($result->num_rows !== 0) {
+        return True;
+    }
+    
+    return False;
 }
 
 // Register new user, output array with state and message
@@ -68,45 +76,29 @@ function registerUser($username, $email, $password) {
         $errors[] = "Alle felt må fylles inn";
     }
     
-    if (!preg_match('/^[A-Za-z0-9]+$/', $username)) {
-        $errors[] = "Brukernavn kan kun bestå av bokstaver og tall";
+    if (!validateUsername($username)) {
+        $errors[] = "Brukernavn kan kun bestå av bokstaver og tall (max. 50 tegn).";
     }
     
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    if (!validateEmail($email)) {
         $errors[] = "E-post ikke gyldig.";
     }
 
-    if (strlen($password) < 6) {
-        $errors[] = "Passordet må være minst 6 tegn";
+    if (!validatePassword($password)) {
+        $errors[] = "Passord må inneholde minst 10 tegn og ett spesialtegn, tall og stor bokstav.";
     }
 
     if (!(empty($errors))) {
-        return ["success" => false, $errors];
+        return ["success" => false, "message" => implode("\n",$errors)];
     }
-    
-    // Check if username already exists using prepared statement
-    $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        $stmt->close();
+    if (isTaken($username, "username")) {
         return ["success" => false, "message" => "Brukernavn er allerede tatt"];
     }
-    $stmt->close();
 
-    // Check if email already exists using prepared statement
-    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $stmt->close();
+    if (isTaken($email, "email")) {
         return ["success" => false, "message" => "E-postadressen er allerede registrert"];
     }
-    $stmt->close();
 
     // Hash password
     $hashed_password = hashPassword($password);
@@ -305,5 +297,121 @@ function logoutUser() {
     // Redirect to the public index using an absolute path so the URL resolves
     header("Location: /index.php");
     exit;
+}
+
+function updateUsername($new_username) {
+    if (empty($new_username)) {
+        $message['type'] = "error";
+        $message['text'] = "Brukernavn kan ikke være tomt.";
+        return $message;
+    }
+    if (!validateUsername($new_username)) {
+        $message['type'] = "error";
+        $message['text'] = "Brukernavn er ikke gyldig.";
+        return $message;
+    }
+    if (isTaken($new_username, "username")) {
+        $message['type'] = "error";
+        $message['text'] = "Brukernavn er allerede tatt";
+        return $message;
+    }
+    global $conn;
+    // Update username
+    $stmt = $conn->prepare("UPDATE users SET username = ? WHERE id = ?");
+    $stmt->bind_param("si", $new_username, $_SESSION['user_id']);
+
+    if (!$stmt->execute()) {
+        $message['type'] = "error";
+        $message['text'] = "Feil ved oppdatering av brukernavn";
+        $stmt->close();
+        return $message;
+    } 
+
+    $message['type'] = "success";
+    $message['text'] = "Brukernavn oppdatert!";
+
+    $stmt->close();
+    return $message;
+}
+
+function updateEmail($new_email) {
+    if (empty($new_email)) {
+        $message['type'] = "error";
+        $message['text'] = "E-post kan ikke være tom.";
+        return $message;
+    }
+    if (!validateEmail($new_email)) {
+        $message['type'] = "error";
+        $message['text'] = "E-post ikke gyldig.";
+        return $message;
+    }
+    if (isTaken($new_email, "email")) {
+        $message['type'] = "error";
+        $message['text'] = "E-post allerede i bruk.";
+        return $message;
+    }
+    global $conn;
+    // Update email
+    $stmt = $conn->prepare("UPDATE users SET email = ? WHERE id = ?");
+    $stmt->bind_param("si", $new_email, $_SESSION['user_id']);
+
+    if(!$stmt->execute()) {
+        $message['type'] = "error";
+        $message['text'] = "Feil ved oppdatering av e-postadresse.";
+        $stmt->close();
+        return $message;
+    }
+
+    $message['type'] = "success";
+    $message['text'] = "E-postadresse oppdatert!";
+    
+    $stmt->close();
+    return $message;
+}
+
+function updatePassword($new_password) {
+    $current_password = isset($_POST['current_password']) ? trim($_POST['current_password']) : '';
+    $new_password = isset($_POST['new_password']) ? trim($_POST['new_password']) : '';
+    $confirm_password = isset($_POST['confirm_password']) ? trim($_POST['confirm_password']) : '';
+
+    if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
+        $message['type'] = "error";
+        $message['text'] = "Alle felt må fylles inn.";
+        return $message;
+    }
+    if ($new_password !== $confirm_password) {
+        $message['type'] = "error";
+        $message['text'] = "Nye passord matcher ikke.";
+        return $message;
+    } 
+    if (!validatePassword($new_password)) {
+        $message['type'] = "error";
+        $message['text'] = "Passord må inneholde minst 10 tegn og ett spesialtegn, tall og stor bokstav.";
+        return $message;
+    } 
+    global $conn;
+    // Verify current password
+    $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
+    $stmt->bind_param("i", $_SESSION['user_id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+
+    // Update password
+    $hashed_password = hashPassword($new_password);
+    $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+    $stmt->bind_param("si", $hashed_password, $_SESSION['user_id']);
+
+    if (!$stmt->execute()) {
+        $message['type'] = "error";
+        $message['text'] = "Feil ved oppdatering av passord";
+        $stmt->close();
+        return $message;
+    }
+
+    $message['type'] = "success";
+    $message['text'] = "Passord oppdatert!";
+    $stmt->close();
 }
 ?>
