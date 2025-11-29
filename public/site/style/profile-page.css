@@ -1,0 +1,198 @@
+/* Profile Page Styles */
+
+/* Uses shared page layout from global styles */
+
+.info-section {
+    background-color: var(--card);
+    padding: 22px;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.info-section h2 {
+    margin: 0 0 16px 0;
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding-bottom: 10px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-size: 14px;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: var(--text);
+    flex: 0 0 auto;
+    margin: 0;
+    margin-right: 16px;
+    font-size: 14px;
+}
+
+.info-item span {
+    color: #666;
+    text-align: right;
+    flex: 1;
+    font-size: 14px;
+}
+
+.dark .info-item span {
+    color: #aaa;
+}
+
+.admin-badge {
+    background-color: #fef3c7;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: #92400e;
+    font-weight: 600;
+    justify-content: center;
+    display: flex;
+    font-size: 13px;
+}
+
+.dark .admin-badge {
+    background-color: #5a3a00;
+    color: #fcd34d;
+}
+
+.form-section {
+    background-color: var(--card);
+    padding: 22px;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.form-section form {
+    display: block;
+    padding: 0;
+    border: none;
+    gap: 0;
+    background: none;
+}
+
+.form-section h2 {
+    margin: 0 0 16px 0;
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding-bottom: 10px;
+}
+
+.form-section label {
+    display: block;
+    margin-bottom: 8px;
+    color: #666;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.dark .form-section label {
+    color: #aaa;
+}
+
+.form-section input,
+.form-section select {
+    width: 100%;
+    padding: 11px 12px;
+    margin-bottom: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+    background: var(--card);
+    color: var(--text);
+    font-family: inherit;
+    display: block;
+    height: 42px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.dark .form-section input,
+.dark .form-section select {
+    background-color: var(--card);
+    border-color: #444;
+    color: var(--text);
+}
+
+.form-section input:focus,
+.form-section select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.2);
+}
+
+.form-section .auth-btn {
+    margin-top: 6px;
+    height: 42px;
+}
+
+.form-select {
+    cursor: pointer;
+}
+
+.section-description {
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+
+.dark .section-description {
+    color: #aaa;
+}
+
+.action-section {
+    text-align: center;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+.link-btn {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: color 0.2s;
+    display: inline-block;
+    padding: 8px 12px;
+}
+
+.link-btn:hover {
+    color: #dc2626;
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .form-section,
+    .info-section {
+        padding: 18px;
+    }
+
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .info-item span {
+        text-align: left;
+        margin-top: 6px;
+    }
+}

@@ -68,9 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="site/style/style.css" rel="stylesheet">
-    <link href="site/style/auth.css" rel="stylesheet">
-    <script src="site/js/page.js" defer></script>
+    <link href="site/style/global.css" rel="stylesheet">
+    <link href="site/style/chat-page.css" rel="stylesheet">
+    <link href="site/style/auth-popup.css" rel="stylesheet">
+    <script src="site/js/theme.js" defer></script>
+    <script src="site/js/chat.js" defer></script>
     <script src="site/js/auth.js" defer></script>
 </head>
 <body>
@@ -96,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
                 <form id="signupFormElement">
                     <input type="text" id="signupUsername" placeholder="Brukernavn">
                     <input type="email" id="signupEmail" placeholder="E-post">
-                    <input type="password" id="signupPassword" placeholder="Passord (minst 6 tegn)">
+                    <input type="password" id="signupPassword" placeholder="Passord (Minst 10 tegn, inkl. tall, stor bokstav og spesialtegn)">
                     <button type="submit" class="auth-btn">Registrer</button>
                 </form>
                 <p class="auth-toggle">Har du konto? <a href="#" onclick="toggleAuthForm()">Logg inn</a></p>

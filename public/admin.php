@@ -30,12 +30,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administratorpanel - MovieMate</title>
-    <link href="site/style/style.css" rel="stylesheet">
-    <link href="site/style/auth.css" rel="stylesheet">
-    <link href="site/style/pages.css" rel="stylesheet">
-    <link href="site/style/admin.css" rel="stylesheet">
+    <link href="site/style/global.css" rel="stylesheet">
+    <link href="site/style/auth-popup.css" rel="stylesheet">
+    <link href="site/style/admin-page.css" rel="stylesheet">
+    <script src="site/js/theme.js" defer></script>
+    <script src="site/js/auth.js" defer></script>
 </head>
 <body>
+    <!-- Theme Toggle -->
+    <button id="themeToggle" class="theme-toggle">🌙</button>
+
+    <!-- User Menu -->
+    <?php
+    $current_user = getCurrentUser();
+    if ($current_user): ?>
+    <div class="user-menu-container">
+        <button id="userMenuBtn" class="user-menu-btn" onclick="toggleUserMenu()">
+            Hei, <?php echo htmlspecialchars($current_user['username']); ?>!
+        </button>
+        <div id="userMenu" class="user-menu hidden">
+            <a href="profile.php" class="menu-item">Profil</a>
+            <a href="settings.php" class="menu-item">Innstillinger</a>
+            <button onclick="logout()" class="menu-item logout-btn">Logg ut</button>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Navigation -->
     <div class="page-header">
         <div class="header-content">
@@ -103,11 +123,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <?php else: ?>
                 <p style="text-align: center; color: #666;">Ingen brukere funnet.</p>
                 <?php endif; ?>
-            </div>
-
-            <!-- Go back to Profile -->
-            <div class="action-section">
-                <a href="profile.php" class="link-btn">Tilbake til profil →</a>
             </div>
         </div>
     </div>

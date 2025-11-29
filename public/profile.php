@@ -35,11 +35,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['preferred_genre'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil</title>
-    <link href="site/style/style.css" rel="stylesheet">
-    <link href="site/style/auth.css" rel="stylesheet">
-    <link href="site/style/pages.css" rel="stylesheet">
+    <link href="site/style/global.css" rel="stylesheet">
+    <link href="site/style/auth-popup.css" rel="stylesheet">
+    <link href="site/style/profile-page.css" rel="stylesheet">
+    <script src="site/js/theme.js" defer></script>
+    <script src="site/js/auth.js" defer></script>
 </head>
 <body>
+    <!-- Theme Toggle -->
+    <button id="themeToggle" class="theme-toggle">🌙</button>
+
+    <!-- User Menu -->
+    <?php if ($current_user): ?>
+    <div class="user-menu-container">
+        <button id="userMenuBtn" class="user-menu-btn" onclick="toggleUserMenu()">
+            Hei, <?php echo htmlspecialchars($current_user['username']); ?>!
+        </button>
+        <div id="userMenu" class="user-menu hidden">
+            <a href="profile.php" class="menu-item">Profil</a>
+            <a href="settings.php" class="menu-item">Innstillinger</a>
+            <button onclick="logout()" class="menu-item logout-btn">Logg ut</button>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Navigation -->
     <div class="page-header">
         <div class="header-content">
@@ -93,16 +112,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['preferred_genre'])) {
 
             <!-- Admin Section -->
             <?php if ($current_user['is_admin']): ?>
-            <div class="admin-section">
+            <div class="form-section">
                 <h2>Administratorpanel</h2>
                 <a href="admin.php" class="auth-btn">Se alle brukere</a>
             </div>
             <?php endif; ?>
-
-            <!-- Go to Settings -->
-            <div class="action-section">
-                <a href="settings.php" class="link-btn">Gå til innstillinger →</a>
-            </div>
         </div>
     </div>
     <!-- Navigation Footer -->

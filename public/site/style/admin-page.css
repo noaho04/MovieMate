@@ -33,6 +33,13 @@
     font-size: 13px;
 }
 
+.users-table tbody td form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
 .users-table tbody tr {
     transition: background-color 0.2s;
 }
@@ -49,46 +56,7 @@
     background-color: #0c4a6e;
 }
 
-/* Badges */
-.badge-admin,
-.badge-user,
-.current-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.badge-admin {
-    background-color: #fef3c7;
-    color: #92400e;
-}
-
-.badge-user {
-    background-color: #dbeafe;
-    color: #075985;
-}
-
-.current-badge {
-    background-color: #dbeafe;
-    color: #075985;
-}
-
-.dark .badge-admin {
-    background-color: #5a3a00;
-    color: #fcd34d;
-}
-
-.dark .badge-user {
-    background-color: #0c4a6e;
-    color: #7dd3fc;
-}
-
-.dark .current-badge {
-    background-color: #0c4a6e;
-    color: #7dd3fc;
-}
+/* Badges - Base styles in global.css */
 
 /* Delete Button */
 .delete-btn {
@@ -133,6 +101,10 @@
 
 .dark .users-table tbody tr:hover {
     background-color: rgba(255, 255, 255, 0.02);
+}
+
+.dark .users-table thead {
+    border-color: rgba(255, 255, 255, 0.05);
 }
 
 /* Responsive Design */

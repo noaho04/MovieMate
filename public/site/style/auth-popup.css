@@ -87,11 +87,11 @@
 
 /* Override global form styling for auth forms */
 .auth-form form {
-    display: block !important;
-    padding: 0 !important;
-    border: none !important;
-    gap: 0 !important;
-    background: none !important;
+    display: block;
+    padding: 0;
+    border: none;
+    gap: 0;
+    background: none;
     border-radius: 8px;
 }
 
@@ -100,7 +100,7 @@
     padding: 11px 12px;
     margin-bottom: 12px;
     border: 1px solid #ccc;
-    border-radius: 8px !important;
+    border-radius: 8px;
     font-size: 15px;
     box-sizing: border-box;
     transition: border-color 0.2s;
@@ -181,7 +181,6 @@
     padding: 10px 12px;
     border-radius: 8px;
     margin-top: 12px;
-    border-left: 3px solid var(--accent);
     animation: slideIn 0.3s ease-out;
     font-size: 13px;
 }
@@ -195,8 +194,9 @@
     color: #fca5a5;
 }
 
-/* Header Auth Button */
-.auth-btn-header {
+/* Header Auth Button & User Menu Button - Consolidated */
+.auth-btn-header,
+.user-menu-btn {
     position: fixed;
     top: 20px;
     right: 70px;
@@ -213,7 +213,8 @@
     font-family: inherit;
 }
 
-.auth-btn-header:hover {
+.auth-btn-header:hover,
+.user-menu-btn:hover {
     background-color: #dc2626;
 }
 
@@ -226,20 +227,7 @@
 }
 
 .user-menu-btn {
-    background-color: var(--accent);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 999px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background-color 0.2s;
-    font-size: 13px;
-    font-family: inherit;
-}
-
-.user-menu-btn:hover {
-    background-color: #dc2626;
+    position: static;
 }
 
 /* User Menu Dropdown */
