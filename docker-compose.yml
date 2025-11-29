@@ -30,15 +30,16 @@ services:
 
 
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    links: 
+    image: phpmyadmin:latest
+    links:
       - db:db
     ports:
       - 8000:80
     environment:
-      MYSQL_USER: dbuser
-      MYSQL_PASSWORD: mm_Passwd!
-      MYSQL_ROOT_PASSWORD: MM_passwd1!
+      PMA_HOST: db
+      PMA_USER: dbuser
+      PMA_PASSWORD: mm_Passwd!
+      PMA_ROOT_PASSWORD: MM_passwd1!
 
 volumes:
   mysql_data: { driver: local }

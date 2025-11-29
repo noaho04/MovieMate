@@ -1,7 +1,7 @@
 <?php
-
 require_once "../private/db/db.php";
 require_once "../private/api/call.php";
+
 
 // Get current user if logged in
 $current_user = getCurrentUser();
@@ -13,9 +13,14 @@ if (!isset($_SESSION['messages'])) {
     ]];
 }
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $_SESSION['submit_token'] = bin2hex(random_bytes(16));
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
     // Token setup for prevention of double submission
     $submit_token = filter_input(INPUT_POST, 'submit_token', FILTER_UNSAFE_RAW) ?? '';
+
     // require non-empty token and exact match with session token
     if ($submit_token === '' || !isset($_SESSION['submit_token']) || !hash_equals($_SESSION['submit_token'], $submit_token)) {
         header('Location: ' . $_SERVER['REQUEST_URI']);
@@ -28,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
     // Remove HTML tags, trim whitespace
     $user_message = trim(strip_tags($raw));
     if (mb_strlen($user_message, 'UTF-8') > 100) {
+        header('Location: ' . $_SERVER['REQUEST_URI']);
         exit;
     }
 
@@ -52,12 +58,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
         }
         $_SESSION['messages'][] = ["role" => "model", "content" => $reply];
     }
-
+    
     header('Location: ' . $_SERVER['REQUEST_URI']);
     exit;
 }
-
-$_SESSION['submit_token'] = bin2hex(random_bytes(16));
 ?>
 <!DOCTYPE html>
 <html>

@@ -6,9 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // define constants for message manipulation
 const form = document.getElementById("chatForm");
 const input = form.querySelector('input[name="message"]');
+const button = form.querySelector('button');
 const chatBox = document.querySelector(".chat-messages");
 
-form.addEventListener("submit", () => {
+form.addEventListener("submit", (e) => {
     // get the usertext for temporary display
     const userText = input.value.trim();
     if (userText){
@@ -28,9 +29,10 @@ form.addEventListener("submit", () => {
         chatBox.scrollTop = chatBox.scrollHeight;
 
         // clear and lock visible input
-        input.value = "";
         input.readOnly = true;
         button.disabled = true;
+    } else {
+        e.preventDefault();
     }
 });
 
