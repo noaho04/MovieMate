@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
     // Token setup for prevention of double submission
-    $submit_token = filter_input(INPUT_POST, 'submit_token', FILTER_UNSAFE_RAW) ?? '';
+    $submit_token = $_POST['submit_token'] ?? '';
 
     // require non-empty token and exact match with session token
     if ($submit_token === '' || !isset($_SESSION['submit_token']) || !hash_equals($_SESSION['submit_token'], $submit_token)) {
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
     // consume token
     $_SESSION['submit_token'] = '';
     // Sanitize raw
-    $raw = filter_input(INPUT_POST, 'message', FILTER_UNSAFE_RAW) ?? '';
+    $raw = $_POST['message'] ?? '';
     // Remove HTML tags, trim whitespace
     $user_message = trim(strip_tags($raw));
     if (mb_strlen($user_message, 'UTF-8') > 100) {
