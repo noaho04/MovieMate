@@ -1,5 +1,6 @@
 <?php
-require "../private/db/db.php";
+require_once "../private/db/db.php";
+require_once "../private/actions/userdeleter.php";
 
 // Check if user is logged in and is admin
 if (!isLoggedIn() || !isAdmin()) {
@@ -10,19 +11,15 @@ if (!isLoggedIn() || !isAdmin()) {
 // Get all users
 $users = getAllUsers();
 
-// Handle user deletion
+// Perform user delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_user') {
-    $user_id_to_delete = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
-
-    // Prevent admin from deleting themselves
-    if ($user_id_to_delete === $_SESSION['user_id']) {
-        $message['type'] = "error";
-        $message['text'] = "Du kan ikke slette din egen bruker!";
-    } else {
-        deleteUser($user_id_to_delete);
-    }
+    handle_user_deletion();
 }
 
+if (isset($_SESSION['status_message'])) {
+    $message = $_SESSION['status_message'];
+    unset($_SESSION['status_message']);
+}
 ?>
 <!DOCTYPE html>
 <html>

@@ -1,5 +1,5 @@
 # MovieMate TODO
 
-- Break down css components
-- Fix double submit
+- Fix double submit for auth
+- Token for auth
 - Search omdb, find fav movie, add to db?

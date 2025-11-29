@@ -6,8 +6,9 @@ function callAPI($chatlog, $preferred_genre='') {
 
     // Define baseline system instruction for the chatbot
     $base = "Du er MovieMate, en hyggelig AI-chatbot som skal gi anbefalinger og informasjon om filmer. Hold svarene korte og ikke bruk formattering som fet-skrift og lister.";
+    // Logic for supplying preffered genre if not empty
     $extra = " Brukeren sin favorittsjanger er $preferred_genre.";
-    $text = $base . $extra;
+    $text = empty($preferred_genre) ? $base : $base . $extra;
     $system_instruction = ["parts" => [["text" => $text]]];
     
     // Pass the system instruction and chatlog to data

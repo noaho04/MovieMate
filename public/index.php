@@ -1,66 +1,26 @@
 <?php
 require_once "../private/db/db.php";
-require_once "../private/api/call.php";
+require_once "../private/actions/chathandler.php";
 
+// Set a submit token when not POSTing
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $_SESSION['submit_token'] = bin2hex(random_bytes(16));
+}
 
-// Get current user if logged in
-$current_user = getCurrentUser();
-
-if (!isset($_SESSION['messages'])) {
+// Set init message
+if (!isset($_SESSION['messages']) || !is_array($_SESSION['messages'])) {
     $_SESSION['messages'] = [[
         "role" => "model",
         "content" => "Hei, jeg er MovieMate. Spør meg om hva som helst film-relatert!"
     ]];
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    $_SESSION['submit_token'] = bin2hex(random_bytes(16));
-}
+// Get current user if logged in
+$current_user = getCurrentUser();
 
+// Handle incoming chat message if a post is happening
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
-    // Token setup for prevention of double submission
-    $submit_token = $_POST['submit_token'] ?? '';
-
-    // require non-empty token and exact match with session token
-    if ($submit_token === '' || !isset($_SESSION['submit_token']) || !hash_equals($_SESSION['submit_token'], $submit_token)) {
-        header('Location: ' . $_SERVER['REQUEST_URI']);
-        exit;
-    }
-    // consume token
-    $_SESSION['submit_token'] = '';
-    // Sanitize raw
-    $raw = $_POST['message'] ?? '';
-    // Remove HTML tags, trim whitespace
-    $user_message = trim(strip_tags($raw));
-    if (mb_strlen($user_message, 'UTF-8') > 100) {
-        header('Location: ' . $_SERVER['REQUEST_URI']);
-        exit;
-    }
-
-    if ($user_message !== '') {
-        // Save user message
-        $_SESSION['messages'][] = ["role" => "user", "content" => $user_message];
-
-        // Build chatlog (skip greeting)
-        $chatlog = [];
-        foreach (array_slice($_SESSION['messages'], 1) as $m) {
-            $chatlog[] = [
-                "role"  => $m["role"],
-                "parts" => [["text" => $m["content"]]]
-            ];
-        }
-
-        // Get model reply + save
-        if(isset($current_user['preferred_genre'])) {
-            $reply = callAPI($chatlog, $current_user['preferred_genre']);
-        } else {
-            $reply = callAPI($chatlog, '');
-        }
-        $_SESSION['messages'][] = ["role" => "model", "content" => $reply];
-    }
-    
-    header('Location: ' . $_SERVER['REQUEST_URI']);
-    exit;
+    handle_chat_post($current_user);
 }
 ?>
 <!DOCTYPE html>

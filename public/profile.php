@@ -1,5 +1,7 @@
 <?php
 require "../private/db/db.php";
+require_once "../private/actions/genreupdater.php";
+
 
 // Check if user is logged in
 if (!isLoggedIn()) {
@@ -7,26 +9,21 @@ if (!isLoggedIn()) {
     exit;
 }
 
+// Create token if not POSTing
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $_SESSION['submit_token'] = bin2hex(random_bytes(16));
+}
+
 $current_user = getCurrentUser();
 $genres = getGenres();
 
-// Handle genre preference update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['preferred_genre'])) {
-    $preferred_genre = $_POST['preferred_genre'] ?? '';
+    handle_genre_post($current_user, $genres);
+}
 
-    // Validate genre
-    if (!($preferred_genre === '' || in_array($preferred_genre, $genres, true))) {
-        $message = "Ugyldig sjanger valgt.";
-    }
-    // Try to update genre
-    elseif (!updateGenre($_SESSION['user_id'], $preferred_genre)) {
-        $message = "Kunne ikke lagre sjanger. Prøv igjen.";
-    }
-    // Update values
-    else {
-        $message = "Sjanger lagret!";
-        $current_user = getCurrentUser();
-    }
+if (isset($_SESSION['status_message'])) {
+    $message = $_SESSION['status_message'];
+    unset($_SESSION['status_message']);
 }
 ?>
 <!DOCTYPE html>
@@ -93,10 +90,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['preferred_genre'])) {
             <div class="form-section">
                 <h2>Foretrukket sjanger</h2>
                 <p class="section-description">Velg din foretrukne sjanger slik at MovieMate kan gi bedre anbefalinger</p>
-                <?php if (!empty($message)): ?>
-                    <div><?= htmlspecialchars($message) ?></div>
+                <?php if (isset($message) && !empty($message)): ?>
+                <div class="message message-<?php echo $message['type']; ?>">
+                    <?php echo htmlspecialchars($message['text']); ?>
+                </div>
                 <?php endif; ?>
                 <form method="post">
+                    <input type="hidden" name="submit_token" value="<?php echo htmlspecialchars($_SESSION['submit_token'] ?? ''); ?>">
                     <select name="preferred_genre" class="form-select">
                         <option value="">Velg en sjanger...</option>
                         <?php foreach ($genres as $genre): ?>

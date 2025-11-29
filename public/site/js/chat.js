@@ -1,4 +1,4 @@
-// Chat functionality - only runs on index.php where chatForm exists
+// Chat functionality, only runs on index.php where chatForm exists
 const form = document.getElementById("chatForm");
 if (form) {
     const input = form.querySelector('input[name="message"]');
@@ -29,7 +29,7 @@ if (form) {
             // ensure chatbox is at bottom
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // clear and lock visible input
+            // lock visible input
             input.readOnly = true;
             button.disabled = true;
         } else {
