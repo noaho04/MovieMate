@@ -1,4 +1,6 @@
 <?php
+// Handle POST for chats in index.php
+
 function handle_chat_post($current_user) {
     // ensure callAPI is available
     require_once __DIR__ . '/../api/call.php';

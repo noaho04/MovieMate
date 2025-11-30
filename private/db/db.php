@@ -21,7 +21,8 @@ if ($conn->connect_error) {
 }
 $conn->set_charset("utf8");
 
-// Get current user's info
+/* Gets user from the session user id
+Returns array with user info */
 function getCurrentUser() {
     if (!isLoggedIn()) {
         return null;
@@ -38,7 +39,8 @@ function getCurrentUser() {
     return $user;
 }
 
-// Get all users (for admin view)
+/* Gets all users for the admin-view
+Returns array with all user info */
 function getAllUsers() {
     global $conn;
     $users_result = $conn->query("SELECT id, username, email, preferred_genre, is_admin FROM users ORDER BY username ASC");
@@ -51,7 +53,9 @@ function getAllUsers() {
     return $users;
 }
 
-// Get all genres for list
+
+/* Get all genre names from genres table
+Return as an array (list) */
 function getGenres() {
     global $conn;
     $stmt = $conn->prepare("SELECT genre_name FROM genres");
@@ -67,7 +71,8 @@ function getGenres() {
     return array_column($result->fetch_all(MYSQLI_ASSOC), 'genre_name');
 }
 
-// Update a given user's genre
+/* Update a given user's preferred genre
+Returns bool value */
 function updateGenre($user_id, $preferred_genre) {
     global $conn;
     // Update genre preference using prepared statement
@@ -82,7 +87,8 @@ function updateGenre($user_id, $preferred_genre) {
     return True;
 }
 
-// check if something istaken 
+/* Check if something is taken in db
+Returns bool value */
 function isTaken($needle, $haystack) {
     $valid_columns = ['email', 'username']; // Example of valid columns
     if (!in_array($haystack, $valid_columns)) {
@@ -104,7 +110,8 @@ function isTaken($needle, $haystack) {
     return False;
 }
 
-// Register new user, output array with state and message
+/* Register a new user
+Returns array with success-state and message */
 function registerUser($username, $email, $password) {
     global $conn;
     $errors = array();
@@ -197,7 +204,8 @@ function checkLoginLock($username) {
     return ["locked" => false, "message" => ""];
 }
 
-// Record failed login attempt
+/* Record a failed login attempt
+Returns array with number of attempts and lock-state */
 function recordFailedAttempt($username) {
     global $conn;
 
@@ -246,7 +254,7 @@ function resetLoginAttempts($username) {
     $stmt->close();
 }
 
-/* Login user with SQL injection protection
+/* Login user
 Returns array with success status and message */
 function loginUser($username, $password) {
     global $conn;
@@ -321,7 +329,8 @@ function logoutUser() {
     exit;
 }
 
-// Update given user's username
+/* Update given user's username
+Returns array with success status and message */
 function updateUsername($new_username, $user_id) {
     global $conn;
     // Update username
@@ -340,7 +349,8 @@ function updateUsername($new_username, $user_id) {
     return $message;
 }
 
-// Update given user's email
+/* Update given user's email
+Returns array with success status and message */
 function updateEmail($new_email, $user_id) {
     global $conn;
     // Update email
@@ -359,7 +369,8 @@ function updateEmail($new_email, $user_id) {
     return $message;
 }
 
-// Update given user's password
+/* Update given user's password
+Returns array with success status and message */
 function updatePassword($new_password, $user_id) {
     global $conn;
 
@@ -380,7 +391,8 @@ function updatePassword($new_password, $user_id) {
     return $message;
 }
 
-// Delete given user
+/* Delete given user
+Returns array with success status and message */
 function deleteUser($user_id) {
     global $conn;
     // Delete user using prepared statement

@@ -16,15 +16,20 @@ if (form) {
         if (userText){
             // create user message
             const userDiv = document.createElement("div");
-            userDiv.className = "message user";
+            userDiv.className = "message user latest";
             userDiv.textContent = userText;
             chatBox.appendChild(userDiv);
 
-            // add model thinking bubble
-            const thinkDiv = document.createElement("div");
-            thinkDiv.className = "message model thinking";
-            thinkDiv.textContent = "Tenker...";
-            chatBox.appendChild(thinkDiv);
+            // ensure chatbox is at bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // add model thinking bubble after wait
+            setTimeout(() => {
+                const thinkDiv = document.createElement("div");
+                thinkDiv.className = "message model latest thinking";
+                thinkDiv.textContent = "Tenker...";
+                chatBox.appendChild(thinkDiv);
+            }, 200);
 
             // ensure chatbox is at bottom
             chatBox.scrollTop = chatBox.scrollHeight;

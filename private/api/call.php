@@ -1,4 +1,9 @@
 <?php
+
+/* Calls the API with baseline instructions 
+and the chatlog + preferred genre for context
+Returns the received message from model */
+
 function callAPI($chatlog, $preferred_genre='') {
     include "API_KEY.php";
 
@@ -55,4 +60,5 @@ function callAPI($chatlog, $preferred_genre='') {
     unset($ch); 
     return $result;
 }
+
 ?>

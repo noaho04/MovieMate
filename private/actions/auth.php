@@ -1,7 +1,7 @@
 <?php
-// Handles login and signup requests via AJAX
+// Handles login and signup requests via AJAX from index.php
 
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../db/db.php';
 
 header('Content-Type: application/json');
 

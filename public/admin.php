@@ -16,10 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     handle_user_deletion();
 }
 
+// Get message and then unset the session message to avoid conflict
 if (isset($_SESSION['status_message'])) {
     $message = $_SESSION['status_message'];
     unset($_SESSION['status_message']);
 }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -65,8 +67,9 @@ if (isset($_SESSION['status_message'])) {
     <div class="page-container">
         <div class="page-content">
 
+            <!-- Display message if found -->
             <?php if (isset($message) && !empty($message)): ?>
-            <div class="message message-<?php echo $message['type']; ?>">
+            <div class="status message <?php echo $message['type']; ?>">
                 <?php echo htmlspecialchars($message['text']); ?>
             </div>
             <?php endif; ?>
