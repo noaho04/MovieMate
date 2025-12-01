@@ -17,14 +17,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $current_user = getCurrentUser();
 $genres = getGenres();
 
+// Handle the genre post to db if a post is done and a genre is received
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['preferred_genre'])) {
     handle_genre_post($current_user, $genres);
 }
 
+// Get message and then unset the session message to avoid conflict
 if (isset($_SESSION['status_message'])) {
     $message = $_SESSION['status_message'];
     unset($_SESSION['status_message']);
 }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -90,8 +93,9 @@ if (isset($_SESSION['status_message'])) {
             <div class="form-section">
                 <h2>Foretrukket sjanger</h2>
                 <p class="section-description">Velg din foretrukne sjanger slik at MovieMate kan gi bedre anbefalinger</p>
+                <!-- Display message if found -->
                 <?php if (isset($message) && !empty($message)): ?>
-                <div class="message message-<?php echo $message['type']; ?>">
+                <div class="status message <?php echo $message['type']; ?>">
                     <?php echo htmlspecialchars($message['text']); ?>
                 </div>
                 <?php endif; ?>

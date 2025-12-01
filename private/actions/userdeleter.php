@@ -1,4 +1,6 @@
 <?php
+// Handle POST for deletion of user in admin page
+
 function handle_user_deletion() {
     $user_id_to_delete = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
     // Prevent admin from deleting themselves
@@ -10,7 +12,8 @@ function handle_user_deletion() {
     }
     // Set message and redirect
     $_SESSION['status_message'] = $result_msg;
-    header('Location: settings.php');
+    header('Location: admin.php');
     exit;
 }
+
 ?>

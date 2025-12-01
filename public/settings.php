@@ -68,9 +68,9 @@ if (isset($_SESSION['status_message'])) {
     <!-- Main Content -->
     <div class="page-container">
         <div class="page-content">
-
+            <!-- Display message if found -->
             <?php if (isset($message) && !empty($message)): ?>
-            <div class="message message-<?php echo $message['type']; ?>">
+            <div class="status message <?php echo $message['type']; ?>">
                 <?php echo htmlspecialchars($message['text']); ?>
             </div>
             <?php endif; ?>

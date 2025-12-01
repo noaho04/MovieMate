@@ -22,6 +22,7 @@ $current_user = getCurrentUser();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
     handle_chat_post($current_user);
 }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -70,23 +71,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
     </div>
 
     <!-- User Menu -->
-    <?php if ($current_user): ?>
-    <div class="user-menu-container">
-        <button id="userMenuBtn" class="user-menu-btn" onclick="toggleUserMenu()">
-            Hei, <?php echo htmlspecialchars($current_user['username']); ?>!
-        </button>
-        <div id="userMenu" class="user-menu hidden">
-            <a href="profile.php" class="menu-item">Profil</a>
-            <a href="settings.php" class="menu-item">Innstillinger</a>
-            <button onclick="logout()" class="menu-item logout-btn">Logg ut</button>
+    <div>
+        <?php if ($current_user): ?>
+        <div class="user-menu-container">
+            <button id="userMenuBtn" class="user-menu-btn" onclick="toggleUserMenu()">
+                Hei, <?php echo htmlspecialchars($current_user['username']); ?>!
+            </button>
+            <div id="userMenu" class="user-menu hidden">
+                <a href="profile.php" class="menu-item">Profil</a>
+                <a href="settings.php" class="menu-item">Innstillinger</a>
+                <button onclick="logout()" class="menu-item logout-btn">Logg ut</button>
+            </div>
         </div>
-    </div>
-    <?php else: ?>
-    <button class="auth-btn-header" onclick="openAuthModal()">Logg inn / Registrer</button>
-    <?php endif; ?>
+        <?php else: ?>
+        <button class="auth-btn-header" onclick="openAuthModal()">Logg inn / Registrer</button>
+        <?php endif; ?>
 
-    <!-- Theme Toggle -->
-    <button id="themeToggle" class="theme-toggle">🌙</button>
+        <!-- Theme Toggle -->
+        <button id="themeToggle" class="theme-toggle">🌙</button>
+    </div>
 
     <!-- Chat Container -->
     <div class="chat-container">
@@ -98,7 +101,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
             <?php
             // Display chat messages
             foreach ($_SESSION['messages'] as $message) {
-                echo '<div class="message ' . htmlspecialchars($message['role']) . '">' . htmlspecialchars($message["content"]) . '</div>';
+                if ($message === end($_SESSION['messages'])) {
+                    $display_message = '<div class="message ' . htmlspecialchars($message['role']) . ' latest">' . htmlspecialchars($message["content"]) . '</div>';
+                } else {
+                    $display_message = '<div class="message ' . htmlspecialchars($message['role']) . '">' . htmlspecialchars($message["content"]) . '</div>';
+                }
+                echo $display_message;
             }
             ?>
         </div>

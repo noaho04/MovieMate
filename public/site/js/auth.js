@@ -58,7 +58,7 @@ document.getElementById('loginFormElement')?.addEventListener('submit', async fu
             + '&username=' + encodeURIComponent(username)
             + '&password=' + encodeURIComponent(password)
 
-        const response = await fetch('/auth.php', {
+        const response = await fetch('site/wrapper/auth-wrapper.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -95,7 +95,7 @@ document.getElementById('signupFormElement')?.addEventListener('submit', async f
             + '&email=' + encodeURIComponent(email)
             + '&password=' + encodeURIComponent(password)
 
-        const response = await fetch('/auth.php', {
+        const response = await fetch('site/wrapper/auth-wrapper.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -125,7 +125,7 @@ function logout() {
         // Create a form and submit it as POST to prevent URL manipulation
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '/auth.php';
+        form.action = 'site/wrapper/auth-wrapper.php';
 
         const input = document.createElement('input');
         input.type = 'hidden';

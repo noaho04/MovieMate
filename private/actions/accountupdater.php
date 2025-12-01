@@ -1,5 +1,6 @@
 <?php
 // Handle POST for settings page
+
 function handle_settings_post($current_user) {
     // token check
     $token = $_POST['submit_token'] ?? '';
@@ -12,9 +13,10 @@ function handle_settings_post($current_user) {
     // consume token to prevent double submit
     unset($_SESSION['submit_token']);
 
+    // Get action and trim or set as empty
     $action = isset($_POST['action']) ? trim($_POST['action']) : '';
     $result_msg = null;
-
+    
     if ($action === 'update_username') {
         $new_username = isset($_POST['new_username']) ? trim($_POST['new_username']) : '';
         if (empty($new_username)) {

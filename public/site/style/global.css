@@ -203,7 +203,7 @@ form button:active {
 }
 
 /* Message Alerts - Shared across pages */
-.message {
+.status.message {
   padding: 12px 14px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -211,24 +211,24 @@ form button:active {
   font-size: 14px;
 }
 
-.message-success {
+.status.message.success {
   background-color: #dbeafe;
   color: #075985;
   border-color: #0284c7;
 }
 
-.message-error {
+.status.message.error {
   background-color: #fee2e2;
   color: #991b1b;
   border-color: #ef4444;
 }
 
-.dark .message-success {
+.dark .status-message-success {
   background-color: #0c4a6e;
   color: #7dd3fc;
 }
 
-.dark .message-error {
+.dark .status-message-error {
   background-color: #5a1a1a;
   color: #fca5a5;
 }

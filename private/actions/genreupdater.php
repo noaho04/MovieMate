@@ -1,4 +1,6 @@
 <?php
+// Handle POST for changing of preferred genre in profile.php
+
 function handle_genre_post($current_user, $genres) {
     // token check
     $token = $_POST['submit_token'] ?? '';
