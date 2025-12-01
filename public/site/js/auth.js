@@ -46,7 +46,7 @@ function getCsrfToken(formSelector) {
     return el ? el.value : '';
 }
 
-//Handle login form submission
+// Handle login form submission
 document.getElementById('loginFormElement')?.addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -117,9 +117,7 @@ document.getElementById('signupFormElement')?.addEventListener('submit', async f
     }
 });
 
-/**
- * Handle logout
- */
+// Handle logout
 function logout() {
     if (confirm('Er du sikker på at du vil logge ut?')) {
         // Create a form and submit it as POST to prevent URL manipulation

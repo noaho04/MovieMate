@@ -5,25 +5,25 @@ if (form) {
     const button = form.querySelector('button');
     const chatBox = document.querySelector(".chat-messages");
 
-    // scroll to bottom
+    // Scroll to bottom
     document.addEventListener('DOMContentLoaded', () => {
         chatBox.scrollTop = chatBox.scrollHeight;
     });
 
     form.addEventListener("submit", (e) => {
-        // get the usertext for temporary display
+        // Get the usertext for temporary display
         const userText = input.value.trim();
         if (userText){
-            // create user message
+            // Create user message
             const userDiv = document.createElement("div");
             userDiv.className = "message user latest";
             userDiv.textContent = userText;
             chatBox.appendChild(userDiv);
 
-            // ensure chatbox is at bottom
+            // Ensure chatbox is at bottom
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // add model thinking bubble after wait
+            // Add model thinking bubble after wait
             setTimeout(() => {
                 const thinkDiv = document.createElement("div");
                 thinkDiv.className = "message model latest thinking";
@@ -31,10 +31,10 @@ if (form) {
                 chatBox.appendChild(thinkDiv);
             }, 200);
 
-            // ensure chatbox is at bottom
+            // Ensure chatbox is at bottom
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // lock visible input
+            // Lock visible input
             input.readOnly = true;
             button.disabled = true;
         } else {

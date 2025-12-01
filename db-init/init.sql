@@ -16,12 +16,13 @@ CREATE TABLE IF NOT EXISTS users (
     favorite_movie VARCHAR(255)
 );
 
+-- Create genres table
 CREATE TABLE IF NOT EXISTS genres (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     genre_name VARCHAR(50) NOT NULL UNIQUE
 );
 
-
+-- Insert default genres
 INSERT IGNORE INTO genres (genre_name)
 VALUES  ("Action"),
         ("Komedie"),
@@ -35,6 +36,7 @@ VALUES  ("Action"),
         ("Krim")
 ON DUPLICATE KEY UPDATE genre_name = genre_name;
 
+-- Insert default admin user
 INSERT INTO users (username, email, password, is_admin) 
 VALUES ("moviemateadminjohn", "admin@moviemate.com", "$2y$10$XitaEBxsnYiQdvHPg6Iq2eRsOKkgY5ygmNANi.G2EnjCYjawOYIYm", 1)
 ON DUPLICATE KEY UPDATE username = username;
