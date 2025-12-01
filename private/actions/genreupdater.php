@@ -2,14 +2,14 @@
 // Handle POST for changing of preferred genre in profile.php
 
 function handle_genre_post($current_user, $genres) {
-    // token check
+    // Token check
     $token = $_POST['submit_token'] ?? '';
     if (!isset($_SESSION['submit_token']) || $token === '' || !hash_equals($_SESSION['submit_token'], $token)) {
         $_SESSION['status_message'] = ['type'=>'error','text'=>'Ugyldig eller manglende token.'];
         header('Location: profile.php');
         exit;
     }
-    // consume token
+    // Consume token
     unset($_SESSION['submit_token']);
 
     $preferred_genre = trim($_POST['preferred_genre'] ?? '');
